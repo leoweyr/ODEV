@@ -11,12 +11,12 @@
 #define PROJECT_TYPE 1
 #define PROGRAM_TYPE 2
 
-extern std::string g_fromPublic;
-extern std::string g_fromPrivate;
+extern std::string g_publicBuildWayPath;
+extern std::string g_privateBuildWayPath;
 
+//Forward declaration.
 class C_Program;
 class C_Project;
-//Forward declaration.
 
 struct S_Route{
     std::string from;
@@ -27,14 +27,14 @@ struct S_Route{
 
 class C_Program{
     private:
-        C_Project *m_attachedProject;
         const int m_type = PROGRAM_TYPE;
-        Json::Value m_buildInstruct;
+        C_Project *m_attachedProject;
         std::vector<S_Route> m_buildRoute;
         std::vector<void (*)(Json::Value)> m_BuildWay;
 
     public:
         std::string m_name;
+        Json::Value m_buildInstruct;
 
         C_Program(C_Project &attachedProject);
         friend void Build(const void *c_projectOrc_program);
@@ -43,7 +43,6 @@ class C_Program{
 class C_Project{
     private:
         const int m_type = PROJECT_TYPE;
-        Json::Value m_buildInstruct;
         std::vector<S_Route> m_buildRoute;
         std::vector<void (*)(Json::Value)> m_BuildWay;
 
@@ -51,6 +50,7 @@ class C_Project{
         std::string m_name;
         std::string m_path;
         std::vector<C_Program> m_programs;
+        Json::Value m_buildInstruct;
 
         friend void Build(const void *c_projectOrc_program);
         void QueryProgram(const C_Program condition,std::vector<std::vector<C_Program>::iterator> &results);

@@ -22,9 +22,9 @@ void Build(const void *c_projectOrc_program) {
     void (*wayFunction)(Json::Value);
     for(std::vector<S_Route>::iterator iter = (*isObject).m_buildRoute.begin(); iter != (*isObject).m_buildRoute.end(); iter++){
         if((*iter).from == "public"){
-            wayDllPath = g_publicBuildWayPath + "\\" + way + ".dll";
+            wayDllPath = g_publicPath_buildWay + "\\" + way + ".dll";
         } else if((*iter).from == "private"){
-            wayDllPath = projectPath + "\\" + g_privateBuildWayPath + "\\" + way + ".dll";
+            wayDllPath = projectPath + "\\" + g_privatePath_buildWay + "\\" + way + ".dll";
         }
         LoadLibrary(wayDllPath);
         wayFunction = (void(*)(Json::Value))GetProcAddress(hDLL,(*iter).method);
@@ -44,7 +44,7 @@ void C_Project::QueryProgram(const C_Program condition, std::vector <std::vector
             if(condition.m_buildInstruct.size() != 0){
                 Json::Comparer comparer;
                 comparer.compare((*iter).m_buildInstruct,condition.m_buildInstruct);
-                if(comparer.isSame() == false){
+                if(comparer.isIncluded() == false){
                     continue;
                 }
             }
@@ -67,7 +67,7 @@ void C_ProgramPool::QueryProject(const C_Project condition,std::vector<std::vect
             if(condition.m_buildInstruct.size() != 0){
                 Json::Comparer comparer;
                 comparer.compare((*iter).m_buildInstruct,condition.m_buildInstruct);
-                if(comparer.isSame() == false){
+                if(comparer.isIncluded() == false){
                     continue;
                 }
             }

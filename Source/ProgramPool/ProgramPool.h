@@ -11,8 +11,8 @@
 #define PROJECT_TYPE 1
 #define PROGRAM_TYPE 2
 
-extern std::string g_publicBuildWayPath;
-extern std::string g_privateBuildWayPath;
+extern std::string g_publicPath_buildWay;
+extern std::string g_privatePath_buildWay;
 
 //Forward declaration.
 class C_Program;
@@ -29,12 +29,12 @@ class C_Program{
     private:
         const int m_type = PROGRAM_TYPE;
         C_Project *m_attachedProject;
-        std::vector<S_Route> m_buildRoute;
         std::vector<void (*)(Json::Value)> m_BuildWay;
 
     public:
         std::string m_name;
         Json::Value m_buildInstruct;
+        std::vector<S_Route> m_buildRoute;
 
         C_Program(C_Project &attachedProject);
         friend void Build(const void *c_projectOrc_program);
@@ -43,7 +43,6 @@ class C_Program{
 class C_Project{
     private:
         const int m_type = PROJECT_TYPE;
-        std::vector<S_Route> m_buildRoute;
         std::vector<void (*)(Json::Value)> m_BuildWay;
 
     public:
@@ -51,6 +50,7 @@ class C_Project{
         std::string m_path;
         std::vector<C_Program> m_programs;
         Json::Value m_buildInstruct;
+        std::vector<S_Route> m_buildRoute;
 
         friend void Build(const void *c_projectOrc_program);
         void QueryProgram(const C_Program condition,std::vector<std::vector<C_Program>::iterator> &results);
@@ -59,10 +59,8 @@ class C_Project{
 };
 
 class C_ProgramPool{
-    private:
-        std::vector<C_Project> m_projects;
-
     public:
+        std::vector<C_Project> m_projects;
         void QueryProject(const C_Project condition,std::vector<std::vector<C_Project>::iterator> &results);
         void AddProject(const C_Project project);
         void RemoveProject(const std::vector<C_Project>::iterator project);

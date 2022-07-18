@@ -73,6 +73,7 @@ license you like.
 
 
 #include "Json-forwards.h"
+#include "JsonCompare.h"
 
 #ifndef JSON_AMALGAMATED_H_INCLUDED
 # define JSON_AMALGAMATED_H_INCLUDED

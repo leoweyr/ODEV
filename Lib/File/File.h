@@ -4,13 +4,17 @@
 #include "io.h"
 
 #include <fstream>
-#include <string>
 
 #include "../../Lib/Jsoncpp/Jsoncpp.h"
 #include "../../Lib/Bitscode/Bitscode.h"
 
 #pragma comment(lib,"../../Lib/Jsoncpp/Jsoncpp.lib")
 #pragma comment(lib,"../../Lib/Bitscode/Bitscode.lib")
+
+/*
+#include <string>
+#include <vector>
+ */
 
 namespace N_File{
     class C_File{
@@ -20,9 +24,18 @@ namespace N_File{
 
         public:
             C_File(const std::string path);
-            void Write(const std::string content);
-            void Write(const Json::Value content);
             bool Read(std::string &content);
             bool Read(Json::Value &content);
+            void Write(const std::string content);
+            void Write(const Json::Value content);
+    };
+
+    class C_Dir{
+        private:
+            std::string m_path;
+
+        public:
+            C_Dir(const std::string path);
+            std::vector<std::string> List();
     };
 }

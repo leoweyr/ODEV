@@ -28,10 +28,10 @@ std::string g_privatePath_menu;
 
 void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const std::string projectPath, Json::Value &menuUnit);
 
-void InProgram(const Json::Value program, C_Project &attachedProject);
+void InDynamicProgram(const Json::Value program, C_Project &attachedProject);
 
-void OutProgram(std::vector<Json::Value> &programs,C_Project &attachedProject);
+void OutStaticProgram(std::vector<Json::Value> &programs, C_Project &attachedProject);
 
-void InProject(const Json::Value project);
+void InDynamicProject(const Json::Value project);
 
-void OutProject(std::vector<Json::Value> &projects);
+void OutStaticProject(std::vector<Json::Value> &projects);

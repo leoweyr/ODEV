@@ -1,4 +1,4 @@
-#include "Config.h"
+#include "Deploy.h"
 
 g_publicPath = "public";
 g_publicPath_buildWay = g_publicPath + "\\" + "buildWay";
@@ -44,7 +44,7 @@ void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const s
     }
 }
 
-void InProgram(const Json::Value program, C_Project &attachedProject){
+void InDynamicProgram(const Json::Value program, C_Project &attachedProject){
     C_Program cProgram(attachedProject);
     cProgram.m_name = program["name"];
     if(program.isMember("buildInstruct") == true){
@@ -78,7 +78,7 @@ void InProgram(const Json::Value program, C_Project &attachedProject){
     attachedProject.AddProgram(cProgram);
 }
 
-void OutProgram(std::vector<Json::Value> &programs, C_Project &attachedProject){
+void OutStaticProgram(std::vector<Json::Value> &programs, C_Project &attachedProject){
     Json::Value program;
     for(std::vector<C_Program>::iterator programs_iter = attachedProject.m_programs.begin(); programs_iter != attachedProject.m_programs.end(); programs_iter++){
         program["name"] = (*programs_iter).m_name;
@@ -90,7 +90,7 @@ void OutProgram(std::vector<Json::Value> &programs, C_Project &attachedProject){
     }
 }
 
-void InProject(const Json::Value project){
+void InDynamicProject(const Json::Value project){
     C_Project cProject;
     cProject.m_name = project["name"];
     cProject.m_path = project["path"];
@@ -122,7 +122,7 @@ void InProject(const Json::Value project){
         if(StringSplit((*menus_iter),".") == "json" && (*menus_iter) != ".self.json"){
             N_File::C_File programMenu(cProject.m_path + "\\" + g_privatePath_menu + "\\" + (*menus_iter));
             programMenu.Read(program);
-            InProgram(program,cProject);
+            InDynamicProgram(program, cProject);
         }
     }
     //Entered project replaces the same one which already exists in global programPool.
@@ -136,7 +136,7 @@ void InProject(const Json::Value project){
     g_programPool.AddProgram(cProgram);
 }
 
-void OutProject(std::vector<Json::Value> &projects){
+void OutStaticProject(std::vector<Json::Value> &projects){
     Json::Value project;
     for(std::vector<C_Project>::iterator projects_iter = g_programPool.m_projects.begin(); projects_iter != g_programPool.m_projects.end();projects_iter++){
         project["name"] = (*projects_iter).m_name;

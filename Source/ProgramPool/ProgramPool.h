@@ -53,7 +53,7 @@ class C_Project{
         std::vector<S_Route> m_buildRoute;
 
         friend void Build(const void *c_projectOrc_program);
-        void QueryProgram(const C_Program condition,std::vector<std::vector<C_Program>::iterator> &results);
+        void QueryProgram(const C_Program *condition,std::vector<std::vector<C_Program>::iterator> &results);
         void AddProgram(const C_Program program);
         void RemoveProgram(const std::vector<C_Program>::iterator program);
 };
@@ -61,7 +61,7 @@ class C_Project{
 class C_ProgramPool{
     public:
         std::vector<C_Project> m_projects;
-        void QueryProject(const C_Project condition,std::vector<std::vector<C_Project>::iterator> &results);
+        void QueryProject(const C_Project *condition,std::vector<std::vector<C_Project>::iterator> &results);
         void AddProject(const C_Project project);
         void RemoveProject(const std::vector<C_Project>::iterator project);
 };

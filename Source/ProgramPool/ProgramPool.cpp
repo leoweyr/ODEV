@@ -38,18 +38,20 @@ void Build(const void *c_projectOrc_program) {
     }
 }
 
-void C_Project::QueryProgram(const C_Program condition, std::vector <std::vector<C_Program>::iterator> &results) {
+void C_Project::QueryProgram(const C_Program *condition = NULL, std::vector <std::vector<C_Program>::iterator> &results) {
     for(std::vector<C_Program>::iterator iter = m_programs.begin();iter != m_programs.end();iter++){
-        if((*iter).m_name == condition.m_name || condition.m_name.size() == 0){
-            if(condition.m_buildInstruct.size() != 0){
-                Json::Comparer comparer;
-                comparer.compare((*iter).m_buildInstruct,condition.m_buildInstruct);
-                if(comparer.isIncluded() == false){
-                    continue;
+        if(condition != NULL){
+            if((*iter).m_name == condition.m_name || condition.m_name.size() == 0){
+                if(condition.m_buildInstruct.size() != 0){
+                    Json::Comparer comparer;
+                    comparer.compare((*iter).m_buildInstruct,condition.m_buildInstruct);
+                    if(comparer.isIncluded() == false){
+                        continue;
+                    }
                 }
             }
-            results.push_back(iter);
         }
+        results.push_back(iter);
     }
 }
 
@@ -61,18 +63,20 @@ void C_Project::RemoveProgram(const std::vector<C_Program>::iterator program) {
     m_programs.erase(program);
 }
 
-void C_ProgramPool::QueryProject(const C_Project condition,std::vector<std::vector<C_Project>::iterator> &results){
+void C_ProgramPool::QueryProject(const C_Project *condition = NULL,std::vector<std::vector<C_Project>::iterator> &results){
     for(std::vector<C_Project>::iterator iter = m_projects.begin();iter != m_projects.end();iter++){
-        if(((*iter).m_name == condition.m_name || condition.m_name.size() == 0)&&((*iter).m_path == condition.m_path || condition.m_path.size() == 0)&&((*iter).m_programs == condition.m_programs || condition.m_programs.size() == 0)){
-            if(condition.m_buildInstruct.size() != 0){
-                Json::Comparer comparer;
-                comparer.compare((*iter).m_buildInstruct,condition.m_buildInstruct);
-                if(comparer.isIncluded() == false){
-                    continue;
+        if(condition != NULL){
+            if(((*iter).m_name == condition.m_name || condition.m_name.size() == 0)&&((*iter).m_path == condition.m_path || condition.m_path.size() == 0)&&((*iter).m_programs == condition.m_programs || condition.m_programs.size() == 0)){
+                if(condition.m_buildInstruct.size() != 0){
+                    Json::Comparer comparer;
+                    comparer.compare((*iter).m_buildInstruct,condition.m_buildInstruct);
+                    if(comparer.isIncluded() == false){
+                        continue;
+                    }
                 }
             }
-            results.push_back(iter);
         }
+        results.push_back(iter);
     }
 }
 

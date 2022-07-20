@@ -2,6 +2,7 @@
 
 #include "direct.h"
 #include "io.h"
+#include "unistd.h"
 
 #include <fstream>
 
@@ -31,11 +32,10 @@ namespace N_File{
     };
 
     class C_Dir{
-        private:
-            std::string m_path;
-
         public:
+            std::string m_path;
             C_Dir(const std::string path);
+            bool isExist();
             std::vector<std::string> List();
     };
 }

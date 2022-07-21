@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include <windows.h>
 #include "../../Lib/Jsoncpp/Jsoncpp.h"
@@ -34,10 +35,10 @@ class C_Program{
     public:
         std::string m_name;
         Json::Value m_buildInstruct;
-        std::vector<S_Route> m_buildRoute;
+        std::map<std::string, std::vector<S_Route>> m_buildRoutes;
 
         C_Program(C_Project &attachedProject);
-        friend void Build(const void *c_projectOrc_program);
+        friend void Build(void *projectOrProgram, const std::string direction);
 };
 
 class C_Project{
@@ -50,9 +51,9 @@ class C_Project{
         std::string m_path;
         std::vector<C_Program> m_programs;
         Json::Value m_buildInstruct;
-        std::vector<S_Route> m_buildRoute;
+        std::map<std::string, std::vector<S_Route>> m_buildRoutes;
 
-        friend void Build(const void *c_projectOrc_program);
+        friend void Build(void *projectOrProgram, const std::string direction);
         void QueryProgram(const C_Program *condition,std::vector<std::vector<C_Program>::iterator> &results);
         void AddProgram(const C_Program program);
         void RemoveProgram(const std::vector<C_Program>::iterator program);

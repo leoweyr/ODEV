@@ -11,6 +11,32 @@ void SetGlobalConfig(){
     g_privatePath_menu = g_privatePath + "\\" + "graph\\menu";
 }
 
+void InDynamicBuildRoutes(const std::string projectPath, const Json::Value staticBuildRoutes, const std::map<std::string, std::vector<S_Route>> &dynamicBuildRoutes){
+    Json::Value route;
+    S_Route buildRouteStep;
+    std::vector<S_Route> buildRoute;
+    for(Json::Value::iterator buildRoutes_iter = staticBuildRoutes.begin(); buildRoutes_iter != staticBuildRoutes.end(); buildRoutes_iter++){
+        if((*buildRoutes_iter)["from"] == "private"){
+            N_File::C_File(projectPath + "\\" + g_privatePath_buildRoute + "\\" + (*buildRoutes_iter)["route"].asString() + ".json").Read(route);
+        }else if((*buildRoutes_iter)["from"] == "public"){
+            N_File::C_File(g_publicPath_buildRoute + "\\" + (*buildRoutes_iter)["route"].asString() + ".json").Read(route);
+        }
+        for(Json::Value::iterator route_iter = route.begin(); route_iter != route.end(); route_iter++){
+            buildRouteStep.from = (*route_iter)["from"];
+            buildRouteStep.way = (*route_iter)["way"];
+            buildRouteStep.method = (*route_iter)["method"];
+            buildRoute.push_back(buildRouteStep);
+        }
+        //Remove duplicate direction of buildRoute in buildRoutes.
+        while (dynamicBuildRoutes.count((*buildRoutes_iter)["direction"].asString()) != 0){
+            std::map<std::string, std::vector<S_Route>>::iterator sameDirection = dynamicBuildRoutes.find((*buildRoutes_iter)["direction"].asString());
+            const_cast<std::map<std::string, std::vector<S_Route>> &>(dynamicBuildRoutes).erase(sameDirection);
+        }
+
+        const_cast<std::map<std::string, std::vector<S_Route>> &>(dynamicBuildRoutes).insert(std::pair<std::string, std::vector<S_Route>>((*buildRoutes_iter)["direction"].asString(), buildRoute));
+    }
+}
+
 void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const std::string projectPath, const Json::Value &menuUnit){
     Json::Value route_dynamic, routeUnit, route_static;
     std::vector<std::string> buildRoutes;
@@ -50,20 +76,8 @@ void InDynamicProgram(const Json::Value program, const C_Project &attachedProjec
     if(program.isMember("buildInstruct") == true){
         cProgram.m_buildInstruct = program["buildInstruct"];
     }
-    if(program.isMember("buildRoute") == true){
-        Json::Value route;
-        S_Route buildRoute;
-        if(program["buildRoute"]["from"] == "public"){
-            N_File::C_File(g_publicPath_buildRoute + "\\" + program["buildRoute"]["route"].asString() + ".json").Read(route);
-        }else if(program["buildRoute"]["from"] == "private"){
-            N_File::C_File(attachedProject.m_path + "\\" + g_privatePath_buildRoute + "\\" + program["buildRoute"]["route"].asString() + ".json").Read(route);
-        }
-        for(Json::Value iter = route.begin(); iter != route.end(); iter++){
-            buildRoute.from = (*iter)["from"];
-            buildRoute.way = (*iter)["way"];
-            buildRoute.method = (*iter)["method"];
-            cProgram.m_buildRoute.push_back(buildRoute);
-        }
+    if(program.isMember("buildRoutes") == true){
+        InDynamicBuildRoutes(attachedProject.m_path, program["buildRoutes"], cProgram.m_buildRoutes);
     }
     //Entered program replaces the same one which already exists in the attached project of global programPool.
     std::vector<std::vector<C_Program>::iterator> samePrograms;
@@ -98,19 +112,7 @@ void InDynamicProject(const Json::Value project){
         cProject.m_buildInstruct = project["buildInstruct"];
     }
     if(project.isMember("buildRoute") == true){
-        Json::Value routes;
-        S_Route route;
-        if(project["buildRoute"]["from"] == "public"){
-            N_File::C_File(g_publicPath_buildRoute + "\\" + project["buildRoute"]["route"].asString() + ".json").Read(routes);
-        }else if(project["buildRoute"]["from"] == "private"){
-            N_File::C_File(cProject.m_path + "\\" + g_privatePath_buildRoute + "\\" + project["buildRoute"]["route"].asString() + ".json").Read(routes);
-        }
-        for(Json::Value routes_iter = routes.begin(); routes_iter != routes.end(); routes_iter++){
-            route.from = (*routes_iter)["from"];
-            route.way = (*routes_iter)["way"];
-            route.method = (*routes_iter)["method"];
-            cProject.m_buildRoute.push_back(route);
-        }
+        InDynamicBuildRoutes(cProject.m_path, project["buildRoutes"], cProject.m_buildRoutes);
     }
     //Entered project replaces the same one which already exists in global programPool.
     std::vector<std::vector<C_Project>::iterator> sameProjects;

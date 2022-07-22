@@ -4,7 +4,7 @@ C_Program::C_Program(C_Project &attachedProject) {
     m_attachedProject = &attachedProject;
 }
 
-void Build(void *projectOrProgram, const std::string direction) {
+std::vector<Json::Value> Build(void *projectOrProgram, const std::string direction) {
     //Identify whether param<c_projectOrc_program> points to class<C_Project> object or points to class<C_Program> object, get buildRoute of the specified direction in member<m_buildRoutes>.
     C_Project *isProjectOrProgram = (C_Project*)projectOrProgram;
     std::string projectPath;
@@ -19,17 +19,19 @@ void Build(void *projectOrProgram, const std::string direction) {
         buildRoute = (*buildObject).m_buildRoutes[direction];
     }
     //Read the execution sequence buildRoute of build way and write it into the preset queue.
+    std::vector<Json::Value> buildWayReturns;
+    Json::Value buildWayReturn;
     std::string wayDllPath;
     HMODULE hDLL;
-    void (*wayFunction)(Json::Value);
-    for(std::vector<S_Route>::iterator iter = buildRoute.begin(); iter != buildRoute.end(); iter++){
-        if((*iter).from == "public"){
+    Json::Value (*wayFunction)(Json::Value);
+    for(std::vector<S_Route>::iterator buildRoute_iter = buildRoute.begin(); buildRoute_iter != buildRoute.end(); buildRoute_iter++){
+        if((*buildRoute_iter).from == "public"){
             wayDllPath = g_publicPath_buildWay + "\\" + way + ".dll";
-        } else if((*iter).from == "private"){
+        } else if((*buildRoute_iter).from == "private"){
             wayDllPath = projectPath + "\\" + g_privatePath_buildWay + "\\" + way + ".dll";
         }
         LoadLibrary(wayDllPath);
-        wayFunction = (void(*)(Json::Value))GetProcAddress(hDLL,(*iter).method);
+        wayFunction = (Json::Value(*)(Json::Value))GetProcAddress(hDLL,(*buildRoute_iter).method);
         if(isProjectOrProgram->m_type == PROJECT_TYPE){
             C_Project *buildObject = (C_Project*)projectOrProgram;
             (*buildObject).m_BuildWay.push_back(wayFunction);
@@ -42,15 +44,18 @@ void Build(void *projectOrProgram, const std::string direction) {
     //Execute each build way in sequence according to the preset queue.
     if(isProjectOrProgram->m_type == PROJECT_TYPE){
         C_Project *buildObject = (C_Project*)projectOrProgram;
-        for(std::vector<void(*)(Json::Value)>::iterator iter = (*buildObject).m_BuildWay.begin(); iter != (*buildObject).m_BuildWay.end(); iter++){
-            (*iter)((*buildObject).m_buildInstruct);
+        for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildObject).m_BuildWay.begin(); BuildWay_iter != (*buildObject).m_BuildWay.end(); BuildWay_iter++){
+            buildWayReturn = (*BuildWay_iter)((*buildObject).m_buildInstruct);
+            buildWayReturns.push_back(buildWayReturn);
         }
     }else if(isProjectOrProgram->m_type == PROGRAM_TYPE){
         C_Program *buildObject = (C_Program*)projectOrProgram;
-        for(std::vector<void(*)(Json::Value)>::iterator iter = (*buildObject).m_BuildWay.begin(); iter != (*buildObject).m_BuildWay.end(); iter++){
-            (*iter)((*buildObject).m_buildInstruct);
+        for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildObject).m_BuildWay.begin(); BuildWay_iter != (*buildObject).m_BuildWay.end(); BuildWay_iter++){
+            buildWayReturn = (*BuildWay_iter)((*buildObject).m_buildInstruct);
+            buildWayReturns.push_back(buildWayReturn);
         }
     }
+    return buildWayReturns;
 }
 
 void C_Project::QueryProgram(const C_Program *condition = NULL, std::vector <std::vector<C_Program>::iterator> &results) {

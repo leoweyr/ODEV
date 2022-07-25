@@ -54,15 +54,16 @@ class C_Project{
         std::map<std::string, std::vector<S_Route>> m_buildRoutes;
 
         friend std::vector<Json::Value> Build(void *projectOrProgram, const std::string direction);
-        void QueryProgram(const C_Program *condition,std::vector<std::vector<C_Program>::iterator> &results);
+        void QueryProgram(const C_Program *condition, std::vector<C_Program*> &results);
         void AddProgram(const C_Program program);
-        void RemoveProgram(const std::vector<C_Program>::iterator program);
+        void RemoveProgram(const C_Program* program);
 };
 
 class C_ProgramPool{
     public:
         std::vector<C_Project> m_projects;
-        void QueryProject(const C_Project *condition,std::vector<std::vector<C_Project>::iterator> &results);
+
+        void QueryProject(const C_Project *condition, std::vector<C_Project*> &results);
         void AddProject(const C_Project project);
-        void RemoveProject(const std::vector<C_Project>::iterator project);
+        void RemoveProject(const C_Project* project);
 };

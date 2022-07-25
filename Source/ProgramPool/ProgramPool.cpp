@@ -58,20 +58,20 @@ std::vector<Json::Value> Build(void *projectOrProgram, const std::string directi
     return buildWayReturns;
 }
 
-void C_Project::QueryProgram(const C_Program *condition = NULL, std::vector <std::vector<C_Program>::iterator> &results) {
-    for(std::vector<C_Program>::iterator iter = m_programs.begin();iter != m_programs.end();iter++){
+void C_Project::QueryProgram(const C_Program *condition = NULL, std::vector<C_Program*> &results) {
+    for(std::vector<C_Program>::iterator programs_iter = m_programs.begin(); programs_iter != m_programs.end(); programs_iter++){
         if(condition != NULL){
-            if((*iter).m_name == condition.m_name || condition.m_name.size() == 0){
-                if(condition.m_buildInstruct.size() != 0){
+            if((*programs_iter).m_name == condition->m_name || condition->m_name.size() == 0){
+                if(condition->m_buildInstruct.size() != 0){
                     Json::Comparer comparer;
-                    comparer.compare((*iter).m_buildInstruct,condition.m_buildInstruct);
+                    comparer.compare((*programs_iter).m_buildInstruct, condition->m_buildInstruct);
                     if(comparer.isIncluded() == false){
                         continue;
                     }
                 }
+                results.push_back(&(*programs_iter));
             }
         }
-        results.push_back(iter);
     }
 }
 
@@ -79,24 +79,35 @@ void C_Project::AddProgram(const C_Program program) {
     m_programs.push_back(program);
 }
 
-void C_Project::RemoveProgram(const std::vector<C_Program>::iterator program) {
-    m_programs.erase(program);
+void C_Project::RemoveProgram(const C_Program* program) {
+    for(std::vector<C_Program>::iterator programs_iter = m_programs.begin(); programs_iter != m_programs.end(); programs_iter++){
+        if((*programs_iter).m_name == program->m_name){
+            if(program->m_buildInstruct.size() != 0){
+                Json::Comparer comparer;
+                comparer.compare((*programs_iter).m_buildInstruct, program->m_buildInstruct);
+                if(comparer.isIncluded() == false){
+                    continue;
+                }
+            }
+            m_programs.erase(programs_iter);
+        }
+    }
 }
 
-void C_ProgramPool::QueryProject(const C_Project *condition = NULL,std::vector<std::vector<C_Project>::iterator> &results){
-    for(std::vector<C_Project>::iterator iter = m_projects.begin();iter != m_projects.end();iter++){
+void C_ProgramPool::QueryProject(const C_Project *condition = NULL, std::vector<C_Project*> &results){
+    for(std::vector<C_Project>::iterator projects_iter = m_projects.begin(); projects_iter != m_projects.end(); projects_iter++){
         if(condition != NULL){
-            if(((*iter).m_name == condition.m_name || condition.m_name.size() == 0)&&((*iter).m_path == condition.m_path || condition.m_path.size() == 0)&&((*iter).m_programs == condition.m_programs || condition.m_programs.size() == 0)){
-                if(condition.m_buildInstruct.size() != 0){
+            if(((*projects_iter).m_name == condition->m_name || condition->m_name.size() == 0) && ((*projects_iter).m_path == condition->m_path || condition->m_path.size() == 0) && ((*projects_iter).m_programs == condition->m_programs || condition->m_programs.size() == 0)){
+                if(condition->m_buildInstruct.size() != 0){
                     Json::Comparer comparer;
-                    comparer.compare((*iter).m_buildInstruct,condition.m_buildInstruct);
+                    comparer.compare((*projects_iter).m_buildInstruct, condition->m_buildInstruct);
                     if(comparer.isIncluded() == false){
                         continue;
                     }
                 }
+                results.push_back(&(*projects_iter));
             }
         }
-        results.push_back(iter);
     }
 }
 
@@ -104,6 +115,17 @@ void C_ProgramPool::AddProjects(const C_Project project) {
     m_projects.push_back(project);
 }
 
-void C_ProgramPool::RemoveProject(const std::vector<C_Project>::iterator project) {
-    m_projects.erase(project);
+void C_ProgramPool::RemoveProject(const C_Project* project) {
+    for(std::vector<C_Project>::iterator projects_iter = m_projects.begin(); projects_iter != m_projects.end(); projects_iter++){
+        if((*projects_iter).m_name == project->m_name && (*projects_iter).m_path == project->m_path && ((*projects_iter).m_programs == project->m_programs || project->m_programs.size() == 0)){
+            if(project->m_buildInstruct.size() != 0){
+                Json::Comparer comparer;
+                comparer.compare((*projects_iter).m_buildInstruct, project->m_buildInstruct);
+                if(comparer.isIncluded() == false){
+                    continue;
+                }
+            }
+            m_projects.erase(projects_iter);
+        }
+    }
 }

@@ -39,13 +39,15 @@ void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const s
 
 void InDynamicProgram(const Json::Value program, const C_Project &attachedProject);
 
-void OutStaticProgram(const std::vector<std::vector<C_Program>::iterator> targetPrograms, const C_Project &attachedProject, std::vector<Json::Value> &programs);
+void OutStaticProgram(const std::vector<C_Program*> targetPrograms, const C_Project &attachedProject, std::vector<Json::Value> &programs);
 
 void InDynamicProject(const Json::Value project);
 
-void OutStaticProject(const std::vector<std::vector<C_Project>::iterator> targetProjects, std::vector<Json::Value> &projects);
+void OutStaticProject(const std::vector<C_Project*> targetProjects, std::vector<Json::Value> &projects);
 
 /* Detailed Task */
-void InstallProgramPool();
+bool MatchProjectPath(const std::string &path);
 
-void UnInstallProgramPool();
+void InstallProgramPool(const std::string currentProjectPath);
+
+void UnInstallProgramPool(const std::string currentProjectPath);

@@ -1,7 +1,7 @@
 #include "Deploy.h"
 
 void SetGlobalConfig(){
-    g_selfPath = N_File::C_Dir().m_path;
+    g_selfPath = CURRENT_EXE_PATH;
     g_publicPath = g_selfPath + "\\" + "public";
     g_publicPath_buildWay = g_publicPath + "\\" + "buildWay";
     g_publicPath_buildRoute = g_publicPath + "\\" + "buildRoute";
@@ -15,7 +15,7 @@ void InDynamicBuildRoutes(const std::string projectPath, const Json::Value stati
     Json::Value route;
     S_Route buildRouteStep;
     std::vector<S_Route> buildRoute;
-    for(Json::Value::iterator buildRoutes_iter = staticBuildRoutes.begin(); buildRoutes_iter != staticBuildRoutes.end(); buildRoutes_iter++){
+    for(Json::Value::iterator buildRoutes_iter = const_cast<Json::Value &>(staticBuildRoutes).begin(); buildRoutes_iter != staticBuildRoutes.end(); buildRoutes_iter++){
         if((*buildRoutes_iter)["from"] == "private"){
             N_File::C_File(projectPath + "\\" + g_privatePath_buildRoute + "\\" + (*buildRoutes_iter)["route"].asString() + ".json").Read(route);
         }else if((*buildRoutes_iter)["from"] == "public"){
@@ -42,7 +42,7 @@ void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const s
     std::vector<std::string> buildRoutes;
     std::string buildRoutesDir_path;
     bool isStaticBuildRouteExist = false;
-    for(std::vector<S_Route>::iterator buildRoute_iter = dynamicBuildRoute.begin(); buildRoute_iter != dynamicBuildRoute.end(); buildRoute_iter++){
+    for(std::vector<S_Route>::iterator buildRoute_iter = const_cast<std::vector<S_Route> &>(dynamicBuildRoute).begin(); buildRoute_iter != dynamicBuildRoute.end(); buildRoute_iter++){
         routeUnit["from"] = (*buildRoute_iter).from;
         routeUnit["way"] = (*buildRoute_iter).way;
         routeUnit["method"] = (*buildRoute_iter).method;
@@ -80,25 +80,23 @@ void InDynamicProgram(const Json::Value program, const C_Project &attachedProjec
         InDynamicBuildRoutes(attachedProject.m_path, program["buildRoutes"], cProgram.m_buildRoutes);
     }
     //Entered program replaces the same one which already exists in the attached project of global programPool.
-    std::vector<std::vector<C_Program>::iterator> samePrograms;
+    std::vector<C_Program*> samePrograms;
     const_cast<C_Project &>(attachedProject).QueryProgram(&cProgram,samePrograms);
     if(samePrograms.size() != 0){
-        for(std::vector<std::vector<C_Program>::iterator>::iterator iter = samePrograms.begin();iter != samePrograms.end();iter++){
-            const_cast<C_Project &>(attachedProject).RemoveProgram(*iter);
+        for(std::vector<C_Program*>::iterator samePrograms_iter = samePrograms.begin(); samePrograms_iter != samePrograms.end(); samePrograms_iter++){
+            const_cast<C_Project &>(attachedProject).RemoveProgram(*samePrograms_iter);
         }
     }
     const_cast<C_Project &>(attachedProject).AddProgram(cProgram);
 }
 
-void OutStaticProgram(const std::vector<std::vector<C_Program>::iterator> targetPrograms, const C_Project &attachedProject, std::vector<Json::Value> &programs){
+void OutStaticProgram(const std::vector<C_Program*> targetPrograms, const C_Project &attachedProject, std::vector<Json::Value> &programs){
     Json::Value program;
-    std::vector<C_Program>::iterator programs_iter;
-    for(std::vector<std::vector<C_Program>::iterator>::iterator programs_iter_iter = targetPrograms.begin(); programs_iter_iter != targetPrograms.m_programs.end(); programs_iter_iter++){
-        programs_iter = (*programs_iter_iter);
-        program["name"] = (*programs_iter).m_name;
-        program["buildInstruct"] = (*programs_iter).m_buildInstruct;
+    for(std::vector<C_Program*>::iterator targetPrograms_iter = const_cast<std::vector<C_Program*> &>(targetPrograms).begin(); targetPrograms_iter != targetPrograms.end(); targetPrograms_iter++){
+        program["name"] = (*targetPrograms_iter)->m_name;
+        program["buildInstruct"] = (*targetPrograms_iter)->m_buildInstruct;
         //Matches the static storage of program's buildRoute which is in the global programPool.
-        MatchStaticBuildRoute((*programs_iter).m_buildRoute,attachedProject.m_path, program);
+        MatchStaticBuildRoute((*targetPrograms_iter)->m_buildRoute, attachedProject.m_path, program);
 
         programs.push_back(program);
     }
@@ -115,85 +113,95 @@ void InDynamicProject(const Json::Value project){
         InDynamicBuildRoutes(cProject.m_path, project["buildRoutes"], cProject.m_buildRoutes);
     }
     //Entered project replaces the same one which already exists in global programPool.
-    std::vector<std::vector<C_Project>::iterator> sameProjects;
+    <std::vector<C_Project*> sameProjects;
     g_programPool.QueryProject(&cProject,sameProjects);
     if(sameProjects.size() != 0){
-        for(std::vector<std::vector<C_Project>::iterator>::iterator sameProjects_iter = sameProjects.begin(); sameProjects_iter != sameProjects.end(); sameProjects_iter++){
+        for(std::vector<C_Project*>::iterator sameProjects_iter = sameProjects.begin(); sameProjects_iter != sameProjects.end(); sameProjects_iter++){
             g_programPool.RemoveProject(*sameProjects_iter);
         }
     }
     g_programPool.AddProject(cProject);
 }
 
-void OutStaticProject(const std::vector<std::vector<C_Project>::iterator> targetProjects, std::vector<Json::Value> &projects){
+void OutStaticProject(const std::vector<C_Project*> targetProjects, std::vector<Json::Value> &projects){
     Json::Value project;
-    std::vector<C_Project>::iterator projects_iter;
-    for(std::vector<std::vector<C_Project>::iterator>::iterator projects_iter_iter = g_programPool.m_projects.begin(); projects_iter_iter != g_programPool.m_projects.end();projects_iter_iter++){
-        projects_iter = (*projects_iter_iter);
-        project["name"] = (*projects_iter).m_name;
-        project["path"] = (*projects_iter).m_path;
-        project["buildInstruct"] = (*projects_iter).m_buildInstruct;
+    for(std::vector<C_Project*>::iterator targetProjects_iter = targetProjects.begin(); targetProjects_iter != targetProjects.end(); targetProjects_iter++){
+        project["name"] = (*targetProjects_iter)->m_name;
+        project["path"] = (*targetProjects_iter)->m_path;
+        project["buildInstruct"] = (*targetProjects_iter)->m_buildInstruct;
         //Matches the static storage of project's buildRoute which is in the global programPool.
-        MatchStaticBuildRoute((*projects_iter).m_buildRoute,(*projects_iter).m_path,project);
+        MatchStaticBuildRoute((*targetProjects_iter)->m_buildRoute, (*targetProjects_iter)->m_path, project);
 
         projects.push_back(project);
     }
 }
 
-void InstallProgramPool(){
-    SetGlobalConfig();
-    //Enter projects.
-    Json::Value projectPaths, project, program;
-    std::vector<std::string> menus;
-    std::vector<std::vector<C_Project>::iterator> project_iters;
-    N_File::C_File(g_selfPath + "\\" + "projects.json").Read(projectPaths);
+bool MatchProjectPath(const std::string &path){
+    Json::Value projectPaths;
+    std::vector<std::string> splitProjectPathArray, splitPathArray, splitPathArray_specifiedDepth;
+    std::string path_specifiedDepth;
+    N_File::C_File projectPaths_json(g_selfPath + "\\" + "projects.json");
+    projectPaths_json.Read(projectPaths);
+    int projectPaths_index = 0;
     for(Json::Value::iterator projectPaths_iter = projectPaths.begin(); projectPaths_iter != projectPaths.end(); projectPaths_iter++){
-        if(N_File::C_Dir((*projectPaths_iter).asString()).isExist() == true){
-            N_File::C_File((*projectPaths_iter).asString() + "\\" + g_privatePath_menu + "\\" + ".self.json").Read(project);
-            project["path"] = (*projectPaths_iter).asString();
-            InDynamicProject(project);
-            //Enter programs of project.
-            C_Project cProject;
-            cProject.m_path = project["path"];
-            g_programPool.QueryProject(&cProject,project_iters);
-            cProject = (*project_iter[0]);
-            menus = N_File::C_Dir((*projectPaths_iter).asString() + "\\" + g_privatePath_menu).List();
-            for(std::vector<std::string>::iterator menus_iter = menus.begin();menus_iter != menus.end();menus_iter++){
-                if(StringSplit((*menus_iter),".") == "json" && (*menus_iter) != ".self.json"){
-                    N_File::C_File((*projectPaths_iter).asString() + "\\" + g_privatePath_menu + "\\" + (*menus_iter)).Read(program);
-                    InDynamicProgram(program, cProject);
-                }
+        splitProjectPathArray = StringSplit(currentProjectPath,"\\");
+        splitPathArray = StringSplit(path,"\\");
+        for(int i=0; i<splitProjectPathArray.size(); i++){
+            splitPathArray_specifiedDepth.push_back(splitPathArray[i]);
+        }
+        path_specifiedDepth = StringUnite(splitPathArray_specifiedDepth,"\\");
+        if(path_specifiedDepth == currentProjectPath){
+            if(N_File::C_Dir(currentProjectPath).isExist() == true){
+                const_cast<std::string &>(path) = currentProjectPath;
+                return true;
+            } else{
+                projectPaths.removeIndex(projectPaths_index,NULL);
+                projectPaths_json.Write(projectPaths);
             }
-        }else{
-            //TODO:If the project does not exist.
+        }
+        projectPaths_index ++;
+    }
+    return false;
+}
+
+void InstallProgramPool(const std::string currentProjectPath){
+    Json::Value project, program;
+    //Enter project.
+    N_File::C_File(currentProjectPath + "\\" + g_privatePath_menu + "\\" + ".self.json").Read(project);
+    project["path"] = currentProjectPath;
+    InDynamicProject(project);
+    //Enter programs of project.
+    C_Project *cProject;
+    std::vector<C_Project*> cProjects;
+    cProject->m_path = currentProjectPath;
+    g_programPool.QueryProject(cProject,cProjects);
+    cProject = &cProjects[0];
+    std::vector<std::string> menus = N_File::C_Dir(currentProjectPath + "\\" + g_privatePath_menu).List();
+    for(std::vector<std::string>::iterator menus_iter = menus.begin(); menus_iter != menus.end(); menus_iter++){
+        if(StringSplit((*menus_iter),".")[(*menus_iter).size() - 1] == "json" && (*menus_iter) != ".self.json"){
+            N_File::C_File(currentProjectPath + "\\" + g_privatePath_menu + "\\" + (*menus_iter)).Read(program);
+            InDynamicProgram(program, *cProject);
         }
     }
 }
 
-void UnInstallProgramPool(){
-    //Outer projects.
-    std::vector<std::vector<C_Project>::iterator> projects_iters, project_iters;
-    std::vector<std::vector<C_Program>::iterator> programs_iters;
-    std::vector<Json::Value> projects, programs;
-    Json::Value projectPaths;
-    std::string projectPath;
-    g_programPool.QueryProject(NULL, projects_iters);
-    OutStaticProject(projects_iters, projects);
-    for(std::vector<Json::Value>::iterator projects_iter = projects.begin(); projects_iters != projects.end(); projects_iters++){
-        projectPath = (*projects_iter)["path"].asString();
-        projectPaths.append(projectPath);
-        (*projects_iter).removeMember("path");
-        N_File::C_File(projectPath + "\\" + g_privatePath_menu + "\\" + ".self.json").Write(*projects_iter);
-        //Outer programs of project.
-        C_Project cProject;
-        cProject.m_path = projectPath;
-        g_programPool.QueryProject(&cProject,project_iters);
-        cProject = (*project_iters[0]);
-        cProject.QueryProgram(NULL,programs_iters)
-        OutStaticProgram(programs_iters, cProject, programs);
-        for(std::vector<Json::Value>::iterator programs_iter = programs.begin(); programs_iter != programs.end(); programs_iter++){
-            N_File::C_File(projectPath + "\\" + g_privatePath_menu + "\\" + (*programs_iter)["name"].asString() + ".json").Write(*programs_iter);
-        }
+void UnInstallProgramPool(const std::string currentProjectPath){
+    //Outer project.
+    C_Project *cProject;
+    std::vector<C_Project*> cProjects;
+    std::vector<Json::Value> projects_json;
+    cProject->m_path = currentProjectPath;
+    g_programPool.QueryProject(cProject, cProjects);
+    OutStaticProject(cProjects, projects_json);
+    projects_json[0].removeMember("path");
+    N_File::C_File(currentProjectPath + "\\" + g_privatePath_menu + "\\" + ".self.json").Write(projects_json[0]);
+    //Outer programs of project.
+    std::vector<C_Program*> cPrograms;
+    std::vector<Json::Value> programs_json;
+    cProject = &cProjects[0];
+    cProject->QueryProgram(NULL,cPrograms);
+    OutStaticProgram(cPrograms, *cProject, programs_json);
+    for(std::vector<Json::Value>::iterator programs_json_iter = programs_json.begin(); programs_json_iter != programs_json.end(); programs_json_iter++){
+        N_File::C_File(currentProjectPath + "\\" + g_privatePath_menu + "\\" + (*programs_json_iter)["name"].asString() + ".json").Write(*programs_json_iter);
     }
-    N_File::C_File(g_selfPath + "\\" + "projects.json").Write(projectPaths);
 }

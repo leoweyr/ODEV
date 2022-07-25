@@ -8,9 +8,13 @@
 
 #include "../../Lib/Jsoncpp/Jsoncpp.h"
 #include "../../Lib/Bitscode/Bitscode.h"
+#include <windows.h>
 
 #pragma comment(lib,"../../Lib/Jsoncpp/Jsoncpp.lib")
 #pragma comment(lib,"../../Lib/Bitscode/Bitscode.lib")
+
+#define CURRENT_EXE_PATH N_File::GetCurrentExePath()
+#define CURRENT_WORKING_DIRECTORY_PATH N_File::GetCurrentWorkingDirectoryPath()
 
 /*
 #include <string>
@@ -38,4 +42,7 @@ namespace N_File{
             bool isExist();
             std::vector<std::string> List();
     };
+
+    std::string GetCurrentExePath();
+    std::string GetCurrentWorkingDirectoryPath();
 }

@@ -16,15 +16,15 @@ void InDynamicBuildRoutes(const std::string projectPath, const Json::Value stati
     S_Route buildRouteStep;
     std::vector<S_Route> buildRoute;
     for(Json::Value::iterator buildRoutes_iter = const_cast<Json::Value &>(staticBuildRoutes).begin(); buildRoutes_iter != staticBuildRoutes.end(); buildRoutes_iter++){
-        if((*buildRoutes_iter)["from"] == "private"){
+        if((*buildRoutes_iter)["from"] == FROM_PRIVATE){
             N_File::C_File(projectPath + "\\" + g_privatePath_buildRoute + "\\" + (*buildRoutes_iter)["route"].asString() + ".json").Read(route);
-        }else if((*buildRoutes_iter)["from"] == "public"){
+        }else if((*buildRoutes_iter)["from"] == FROM_PUBLIC){
             N_File::C_File(g_publicPath_buildRoute + "\\" + (*buildRoutes_iter)["route"].asString() + ".json").Read(route);
         }
         for(Json::Value::iterator route_iter = route.begin(); route_iter != route.end(); route_iter++){
-            buildRouteStep.from = (*route_iter)["from"];
-            buildRouteStep.way = (*route_iter)["way"];
-            buildRouteStep.method = (*route_iter)["method"];
+            buildRouteStep.from = (*route_iter)["from"].asInt();
+            buildRouteStep.way = (*route_iter)["way"].asString();
+            buildRouteStep.method = (*route_iter)["method"].asString();
             buildRoute.push_back(buildRouteStep);
         }
         //Remove duplicate direction of buildRoute in buildRoutes.
@@ -55,7 +55,7 @@ void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const s
             if(StringSplit((*buildRoutes_iter),".")[-1] == "json"){
                 N_File::C_File(buildRoutesDir_path + "\\" + (*buildRoutes_iter)).Read(route_static);
                 if(route_static == route_dynamic){
-                    const_cast<Json::Value &>(menuUnit)["buildRoute"]["from"] = (matchStep < 1) ? ("private") : ("public");
+                    const_cast<Json::Value &>(menuUnit)["buildRoute"]["from"] = (matchStep < 1) ? (FROM_PRIVATE) : (FROM_PUBLIC);
                     const_cast<Json::Value &>(menuUnit)["buildRoute"]["route"] = StringSplit((*buildRoutes),".")[-2];
                     isStaticBuildRouteExist = true;
                     break;
@@ -65,14 +65,14 @@ void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const s
     }
     if(isStaticBuildRouteExist == false){
         N_File::C_File(projectPath + "\\" + g_privatePath_buildRoute + "\\" + menuUnit["name"].asString() + "_used.json").Write(route_dynamic);
-        menuUnit["buildRoute"]["from"] = "private";
+        menuUnit["buildRoute"]["from"] = FROM_PRIVATE;
         menuUnit["buildRoute"]["route"] = menuUnit["name"].asString() + "_used";
     }
 }
 
 void InDynamicProgram(const Json::Value program, const C_Project &attachedProject){
     C_Program cProgram(const_cast<C_Project &>(attachedProject));
-    cProgram.m_name = program["name"];
+    cProgram.m_name = program["name"].asString();
     if(program.isMember("buildInstruct") == true){
         cProgram.m_buildInstruct = program["buildInstruct"];
     }
@@ -104,8 +104,8 @@ void OutStaticProgram(const std::vector<C_Program*> targetPrograms, const C_Proj
 
 void InDynamicProject(const Json::Value project){
     C_Project cProject;
-    cProject.m_name = project["name"];
-    cProject.m_path = project["path"];
+    cProject.m_name = project["name"].asString();
+    cProject.m_path = project["path"].asString();
     if(project.isMember("buildInstruct") == true){
         cProject.m_buildInstruct = project["buildInstruct"];
     }

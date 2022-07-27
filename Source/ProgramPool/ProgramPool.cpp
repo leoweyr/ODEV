@@ -9,11 +9,11 @@ int Build(void *projectOrProgram, const std::string direction, std::vector<Json:
     C_Project *isProjectOrProgram = (C_Project*)projectOrProgram;
     std::string projectPath;
     std::vector<S_Route> buildRoute;
-    if(isProjectOrProgram->m_type == PROJECT_TYPE){
+    if(isProjectOrProgram->m_type == TYPE_PROJECT){
         C_Project *buildObject = (C_Project*)projectOrProgram;
         projectPath = (*buildObject).m_path;
         buildRoute = (*buildObject).m_buildRoutes[direction];
-    }else if(isProjectOrProgram->m_type == PROGRAM_TYPE){
+    }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
         C_Program *buildObject = (C_Program*)projectOrProgram;
         projectPath = (*buildObject).m_attachedProject->path;
         buildRoute = (*buildObject).m_buildRoutes[direction];
@@ -24,30 +24,30 @@ int Build(void *projectOrProgram, const std::string direction, std::vector<Json:
     HMODULE hDLL;
     Json::Value (*wayFunction)(Json::Value);
     for(std::vector<S_Route>::iterator buildRoute_iter = buildRoute.begin(); buildRoute_iter != buildRoute.end(); buildRoute_iter++){
-        if((*buildRoute_iter).from == "public"){
-            wayDllPath = g_publicPath_buildWay + "\\" + way + ".dll";
-        } else if((*buildRoute_iter).from == "private"){
+        if((*buildRoute_iter).from == FROM_PRIVATE){
             wayDllPath = projectPath + "\\" + g_privatePath_buildWay + "\\" + way + ".dll";
+        }else if((*buildRoute_iter).from == FROM_PUBLIC){
+            wayDllPath = g_publicPath_buildWay + "\\" + way + ".dll";
         }
         LoadLibrary(wayDllPath);
         wayFunction = (Json::Value(*)(Json::Value))GetProcAddress(hDLL,(*buildRoute_iter).method);
-        if(isProjectOrProgram->m_type == PROJECT_TYPE){
+        if(isProjectOrProgram->m_type == TYPE_PROJECT){
             C_Project *buildObject = (C_Project*)projectOrProgram;
             (*buildObject).m_BuildWay.push_back(wayFunction);
-        }else if(isProjectOrProgram->m_type == PROGRAM_TYPE){
+        }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
             C_Program *buildObject = (C_Program*)projectOrProgram;
             (*buildObject).m_BuildWay.push_back(wayFunction);
         }
         FreeLibrary(hDLL);
     }
     //Execute each build way in sequence according to the preset queue.
-    if(isProjectOrProgram->m_type == PROJECT_TYPE){
+    if(isProjectOrProgram->m_type == TYPE_PROJECT){
         C_Project *buildObject = (C_Project*)projectOrProgram;
         for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildObject).m_BuildWay.begin(); BuildWay_iter != (*buildObject).m_BuildWay.end(); BuildWay_iter++){
             buildWayReturn = (*BuildWay_iter)((*buildObject).m_buildInstruct);
             aftermaths.push_back(buildWayReturn);
         }
-    }else if(isProjectOrProgram->m_type == PROGRAM_TYPE){
+    }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
         C_Program *buildObject = (C_Program*)projectOrProgram;
         for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildObject).m_BuildWay.begin(); BuildWay_iter != (*buildObject).m_BuildWay.end(); BuildWay_iter++){
             buildWayReturn = (*BuildWay_iter)((*buildObject).m_buildInstruct);

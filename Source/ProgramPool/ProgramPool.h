@@ -9,8 +9,11 @@
 
 #pragma comment(lib,"../../Lib/Json/Jsoncpp.lib")
 
-#define PROJECT_TYPE 1
-#define PROGRAM_TYPE 2
+#define FROM_PRIVATE 0
+#define FROM_PUBLIC 1
+#define TYPE_PROGRAM 0
+#define TYPE_PROJECT 1
+
 
 extern std::string g_publicPath_buildWay;
 extern std::string g_privatePath_buildWay;
@@ -21,7 +24,7 @@ class C_Project;
 class C_ProgramPool;
 
 struct S_Route{
-    std::string from;
+    int from;
     std::string way;
     std::string method;
 };
@@ -29,7 +32,7 @@ struct S_Route{
 
 class C_Program{
     private:
-        const int m_type = PROGRAM_TYPE;
+        const int m_type = TYPE_PROGRAM;
         C_Project *m_attachedProject;
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
 
@@ -45,7 +48,7 @@ class C_Program{
 
 class C_Project{
     private:
-        const int m_type = PROJECT_TYPE;
+        const int m_type = TYPE_PROJECT;
         std::vector<C_Program> m_programs;
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
 

@@ -18,6 +18,7 @@ extern std::string g_privatePath_buildWay;
 //Forward declaration.
 class C_Program;
 class C_Project;
+class C_ProgramPool;
 
 struct S_Route{
     std::string from;
@@ -44,12 +45,12 @@ class C_Program{
 class C_Project{
     private:
         const int m_type = PROJECT_TYPE;
+        std::vector<C_Program> m_programs;
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
 
     public:
         std::string m_name;
         std::string m_path;
-        std::vector<C_Program> m_programs;
         Json::Value m_buildInstruct;
         std::map<std::string, std::vector<S_Route>> m_buildRoutes;
 
@@ -57,12 +58,15 @@ class C_Project{
         void QueryProgram(const C_Program *condition, std::vector<C_Program*> &results);
         void AddProgram(const C_Program program);
         void RemoveProgram(const C_Program* program);
+
+        friend class C_ProgramPool;
 };
 
 class C_ProgramPool{
-    public:
+    private:
         std::vector<C_Project> m_projects;
 
+    public:
         void QueryProject(const C_Project *condition, std::vector<C_Project*> &results);
         void AddProject(const C_Project project);
         void RemoveProject(const C_Project* project);

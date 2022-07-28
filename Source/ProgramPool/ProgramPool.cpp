@@ -68,9 +68,11 @@ void C_Project::QueryProgram(const C_Program *condition = NULL, std::vector<C_Pr
                         continue;
                     }
                 }
-                results.push_back(&(*programs_iter));
+            }else{
+                continue;
             }
         }
+        results.push_back(&(*programs_iter));
     }
 }
 
@@ -104,9 +106,11 @@ void C_ProgramPool::QueryProject(const C_Project *condition = NULL, std::vector<
                         continue;
                     }
                 }
-                results.push_back(&(*projects_iter));
+            }else{
+                continue;
             }
         }
+        results.push_back(&(*projects_iter));
     }
 }
 

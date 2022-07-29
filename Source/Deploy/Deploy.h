@@ -22,13 +22,16 @@ C_ProgramPool g_programPool;
 
 /* Global Configuration */
 std::string g_selfPath;
+std::string g_currentProjectPath;
 std::string g_publicPath;
 std::string g_publicPath_buildWay;
 std::string g_publicPath_buildRoute;
+std::string g_publicPath_aftermath;
 std::string g_privatePath;
 std::string g_privatePath_buildWay;
 std::string g_privatePath_buildRoute;
 std::string g_privatePath_menu;
+std::string g_privatePath_aftermath;
 
 /* Basic Operation */
 void SetGlobalConfig();

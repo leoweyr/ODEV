@@ -5,10 +5,12 @@ void SetGlobalConfig(){
     g_publicPath = g_selfPath + "\\" + "public";
     g_publicPath_buildWay = g_publicPath + "\\" + "buildWay";
     g_publicPath_buildRoute = g_publicPath + "\\" + "buildRoute";
+    g_publicPath_aftermath = g_publicPath + "\\" + "aftermath";
     g_privatePath = ".ODEV";
     g_privatePath_buildWay = g_privatePath + "\\" + "graph\\way";
     g_privatePath_buildRoute = g_privatePath + "\\" + "graph\\route";
     g_privatePath_menu = g_privatePath + "\\" + "graph\\menu";
+    g_privatePath_aftermath = g_privatePath + "\\" + "aftermath";
 }
 
 void InDynamicBuildRoutes(const std::string projectPath, const Json::Value staticBuildRoutes, const std::map<std::string, std::vector<S_Route>> &dynamicBuildRoutes){
@@ -153,6 +155,7 @@ bool MatchProjectPath(const std::string &path){
         if(path_specifiedDepth == currentProjectPath){
             if(N_File::C_Dir(currentProjectPath).isExist() == true){
                 const_cast<std::string &>(path) = currentProjectPath;
+                g_currentProjectPath = currentProjectPath;
                 return true;
             } else{
                 projectPaths.removeIndex(projectPaths_index,NULL);

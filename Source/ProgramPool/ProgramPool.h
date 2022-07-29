@@ -36,14 +36,14 @@ class C_Program{
         C_Project *m_attachedProject;
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
 
+        friend int Build(void *projectOrProgram, const std::string direction, std::vector<Json::Value> &aftermaths);
+
     public:
         std::string m_name;
         Json::Value m_buildInstruct;
         std::map<std::string, std::vector<S_Route>> m_buildRoutes;
 
         C_Program(C_Project &attachedProject);
-
-        friend int Build(void *projectOrProgram, const std::string direction, std::vector<Json::Value> &aftermaths);
 };
 
 class C_Project{
@@ -51,6 +51,9 @@ class C_Project{
         const int m_type = TYPE_PROJECT;
         std::vector<C_Program> m_programs;
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
+
+        friend class C_ProgramPool;
+        friend int Build(void *projectOrProgram, const std::string direction, std::vector<Json::Value> &aftermaths);
 
     public:
         std::string m_name;
@@ -61,9 +64,6 @@ class C_Project{
         void QueryProgram(const C_Program *condition, std::vector<C_Program*> &results);
         void AddProgram(const C_Program program);
         void RemoveProgram(const C_Program* program);
-
-        friend int Build(void *projectOrProgram, const std::string direction, std::vector<Json::Value> &aftermaths);
-        friend class C_ProgramPool;
 };
 
 class C_ProgramPool{

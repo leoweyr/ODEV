@@ -29,8 +29,8 @@ int Build(void *projectOrProgram, const std::string direction, std::vector<Json:
         }else if((*buildRoute_iter).from == FROM_PUBLIC){
             wayDllPath = g_publicPath_buildWay + "\\" + way + ".dll";
         }
-        LoadLibrary(wayDllPath);
-        wayFunction = (Json::Value(*)(Json::Value))GetProcAddress(hDLL,(*buildRoute_iter).method);
+        hDLL = LoadLibrary(wayDllPath.data());
+        wayFunction = (Json::Value(*)(Json::Value))GetProcAddress(hDLL,(*buildRoute_iter).method.data());
         if(isProjectOrProgram->m_type == TYPE_PROJECT){
             C_Project *buildObject = (C_Project*)projectOrProgram;
             (*buildObject).m_BuildWay.push_back(wayFunction);

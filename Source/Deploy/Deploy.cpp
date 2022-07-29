@@ -115,7 +115,7 @@ void InDynamicProject(const Json::Value project){
         InDynamicBuildRoutes(cProject.m_path, project["buildRoutes"], cProject.m_buildRoutes);
     }
     //Entered project replaces the same one which already exists in global programPool.
-    <std::vector<C_Project*> sameProjects;
+    std::vector<C_Project*> sameProjects;
     g_programPool.QueryProject(&cProject,sameProjects);
     if(sameProjects.size() != 0){
         for(std::vector<C_Project*>::iterator sameProjects_iter = sameProjects.begin(); sameProjects_iter != sameProjects.end(); sameProjects_iter++){
@@ -135,6 +135,34 @@ void OutStaticProject(const std::vector<C_Project*> targetProjects, std::vector<
         MatchStaticBuildRoute((*targetProjects_iter)->m_buildRoute, (*targetProjects_iter)->m_path, project);
 
         projects.push_back(project);
+    }
+}
+
+void InDynamicAftermath(const Json::Value aftermath){
+    C_Aftermath cAftermath;
+    cAftermath.m_priority = aftermath["priority"].asInt();
+    cAftermath.m_from = aftermath["from"].asInt();
+    cAftermath.m_name = aftermath["name"].asString();
+    cAftermath.m_method = aftermath["method"].asString();
+    //Entered aftermath replaces the same one which already exists in global aftermathList.
+    std::vector<C_Aftermath*> sameAftermaths;
+    g_aftermathList.QueryAftermath(&cAftermath,sameAftermaths);
+    if(sameAftermaths.size() != 0){
+        for(std::vector<C_Aftermath*>::iterator sameAftermaths_iter = sameAftermaths.begin(); sameAftermaths_iter != sameAftermaths.end(); sameAftermaths_iter++){
+            g_aftermathList.RemoveProgram(*sameAftermaths_iter);
+        }
+    }
+    g_aftermathList.AddAftermath(cAftermath);
+}
+
+void OutStaticAftermath(const std::vector<C_Aftermath*> targetAftermaths, std::vector<Json::Value> &aftermaths){
+    Json::Value aftermath;
+    for(std::vector<C_Aftermath*>::iterator targetAftermaths_iter = targetAftermaths.begin(); targetAftermaths_iter != targetAftermaths.end(); targetAftermaths_iter++){
+        aftermath["priority"] = (*targetAftermaths_iter)->m_priority;
+        aftermath["from"] = (*targetAftermaths_iter)->m_from;
+        aftermath["name"] = (*targetAftermaths_iter)->m_name;
+        aftermath["method"] = (*targetAftermaths_iter)->m_method;
+        aftermaths.push_back(aftermath);
     }
 }
 
@@ -188,7 +216,7 @@ void InstallProgramPool(const std::string currentProjectPath){
     }
 }
 
-void UnInstallProgramPool(const std::string currentProjectPath){
+void UninstallProgramPool(const std::string currentProjectPath){
     //Outer project.
     C_Project *cProject;
     std::vector<C_Project*> cProjects;
@@ -207,4 +235,36 @@ void UnInstallProgramPool(const std::string currentProjectPath){
     for(std::vector<Json::Value>::iterator programs_json_iter = programs_json.begin(); programs_json_iter != programs_json.end(); programs_json_iter++){
         N_File::C_File(currentProjectPath + "\\" + g_privatePath_menu + "\\" + (*programs_json_iter)["name"].asString() + ".json").Write(*programs_json_iter);
     }
+}
+
+void InstallAftermathList(const std::string currentProjectPath){
+    Json::Value aftermaths;
+    std::string aftermathsPath;
+    for(int installStep = 0; installStep < 2; installStep++){
+        aftermathsPath = (installStep < 1)?(g_publicPath_aftermath + "\\" + "aftermaths.json"):(currentProjectPath + "\\" + g_privatePath_aftermath + "\\" + "aftermaths.json");
+        N_File::C_File(aftermathsPath).Read(aftermaths);
+        for(Json::Value::iterator aftermaths_iter = aftermaths.begin(); aftermaths_iter != aftermaths.end(); aftermaths_iter++){
+            (*aftermaths_iter)["from"] = (installStep < 1)?(FROM_PRIVATE):(FROM_PUBLIC);
+            InDynamicAftermath(*aftermaths_iter);
+        }
+    }
+}
+
+void UninstallAftermathList(const std::string currentProjectPath){
+    std::vector<C_Aftermath*> cAftermaths;
+    Json::Value aftermath, aftermaths_public, aftermaths_private;
+    std::vector<Json::Value> aftermaths;
+    g_aftermathList.QueryAftermath(NULL,cAftermaths);
+    OutStaticAftermath(cAftermaths, aftermaths);
+    for(std::vector<Json::Value>::iterator aftermaths_iter = aftermaths.begin(); aftermaths_iter != aftermaths.end(); aftermaths_iter++){
+        if((*aftermaths_iter)["from"] == FROM_PUBLIC){
+            (*aftermaths_iter).removeMember("from");
+            aftermaths_public.append((*aftermaths_iter));
+        }else if((*aftermaths_iter)["from"] == FROM_PRIVATE){
+            (*aftermaths_iter).removeMember("from");
+            aftermaths_private.append((*aftermaths_iter));
+        }
+    }
+    N_File::C_File(g_publicPath_aftermath + "\\" + "aftermaths.json").Write(aftermaths_public);
+    N_File::C_File(currentProjectPath + "\\" + g_privatePath_aftermath + "\\" + "aftermaths.json").Write(aftermaths_private);
 }

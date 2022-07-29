@@ -21,14 +21,14 @@ class C_AftermathList;
 
 class C_Aftermath{
     private:
-        void (*m_AftermathHandler)(Json::Value);
+        void (*m_Handler)(Json::Value);
 
         friend class C_AftermathList;
 
     public:
         int m_priority;
         int m_from;
-        std::string m_aftermath;
+        std::string m_name;
         std::string m_method;
 };
 

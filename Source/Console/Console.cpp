@@ -13,6 +13,9 @@
 #pragma comment(lib,"../../Lib/File/File.lib")
 */
 
+extern C_ProgramPool g_programPool;
+extern C_AftermathList g_aftermathList;
+
 int main(int argc, char *argv[]){
     SetGlobalConfig();
     //Check if the current working directory contains an existing project in ODEV.
@@ -25,7 +28,7 @@ int main(int argc, char *argv[]){
     InstallProgramPool(currentProjectPath);
     InstallAftermathList(currentProjectPath);
 
-    if(argv[1][0] == "-"){
+    if(argv[1][0] == '-'){
         //TODO:Other command interaction features.
         ;
     }else{ //set build direction

@@ -4,11 +4,10 @@
 #include <string>
 
 #include "../../Lib/Jsoncpp/Jsoncpp.h"
-#include "../../Lib/SortData/SortData.h"
+#include "../lib_template_SortData/SortData_instantiate.h"
 #include <windows.h>
 
 #pragma comment(lib,"../../Lib/Jsoncpp/Jsoncpp.lib")
-#pragma comment(lib,"../../Lib/SortData/SortData.lib")
 
 #define FROM_PRIVATE 0
 #define FROM_PUBLIC 1

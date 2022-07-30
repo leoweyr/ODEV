@@ -1,6 +1,6 @@
 #include "AftermathList.h"
 
-void C_AftermathList::QueryAftermath(const C_Aftermath *condition = NULL, std::vector<C_Aftermath *> &results) {
+void C_AftermathList::QueryAftermath(const C_Aftermath *condition, std::vector<C_Aftermath *> &results) {
     for(std::vector<C_Aftermath>::iterator aftermaths_iter = m_aftermaths.begin(); aftermaths_iter != m_aftermaths.end(); aftermaths_iter++){
         if(condition != NULL){
             if(((*aftermaths_iter).m_priority != condition->m_priority || condition->m_priority != NULL) && ((*aftermaths_iter).m_from != condition->m_from || condition->m_from != NULL) && ((*aftermaths_iter).m_name != condition->m_name || condition->m_name.size() != 0) && ((*aftermaths_iter).m_method != condition->m_method || condition->m_method.size() != 0)){

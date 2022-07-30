@@ -19,28 +19,12 @@
 #pragma comment(lib,"../../Lib/Bitscode/Bitscode.lib")
  */
 
-C_ProgramPool g_programPool;
-C_AftermathList g_aftermathList;
-
-/* Global Configuration */
-std::string g_selfPath;
-std::string g_currentProjectPath;
-std::string g_publicPath;
-std::string g_publicPath_buildWay;
-std::string g_publicPath_buildRoute;
-std::string g_publicPath_aftermath;
-std::string g_privatePath;
-std::string g_privatePath_buildWay;
-std::string g_privatePath_buildRoute;
-std::string g_privatePath_menu;
-std::string g_privatePath_aftermath;
-
 /* Basic Operation */
 void SetGlobalConfig();
 
 void InDynamicBuildRoutes(const std::string projectPath, const Json::Value staticBuildRoutes, const std::map<std::string, std::vector<S_Route>> &dynamicBuildRoutes);
 
-void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const std::string projectPath, const Json::Value &menuUnit);
+void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const std::string projectPath, const Json::Value &staticBuildRoute);
 
 void InDynamicProgram(const Json::Value program, const C_Project &attachedProject);
 

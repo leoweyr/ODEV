@@ -32,7 +32,7 @@ struct S_Route{
 
 class C_Program{
     private:
-        const int m_type = TYPE_PROGRAM;
+        int m_type = TYPE_PROGRAM;
         C_Project *m_attachedProject;
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
 
@@ -48,7 +48,7 @@ class C_Program{
 
 class C_Project{
     private:
-        const int m_type = TYPE_PROJECT;
+        int m_type = TYPE_PROJECT;
         std::vector<C_Program> m_programs;
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
 

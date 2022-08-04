@@ -4,21 +4,12 @@ C_Program::C_Program(C_Project &attachedProject) {
     m_attachedProject = &attachedProject;
 }
 
-int Build(void *projectOrProgram, const std::string direction, std::vector<Json::Value> &aftermaths) {
+template <typename T> int Build(const T &buildObject, const std::string direction, std::vector<Json::Value> &aftermaths) {
     int errorCode = 0;
-    //Identify whether param<c_projectOrc_program> points to class<C_Project> object or points to class<C_Program> object, get buildRoute of the specified direction in member<m_buildRoutes>.
-    C_Project *isProjectOrProgram = (C_Project*)projectOrProgram;
     std::string projectPath;
     std::vector<S_Route> buildRoute;
-    if(isProjectOrProgram->m_type == TYPE_PROJECT){
-        C_Project *buildObject = (C_Project*)projectOrProgram;
-        projectPath = (*buildObject).m_path;
-        buildRoute = (*buildObject).m_buildRoutes[direction];
-    }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
-        C_Program *buildObject = (C_Program*)projectOrProgram;
-        projectPath = (*buildObject).m_attachedProject->m_path;
-        buildRoute = (*buildObject).m_buildRoutes[direction];
-    }
+    projectPath = (std::is_same<T, C_Project>::value)?(buildObject.m_path):(buildObject.m_attachedProject->m_path);
+    buildRoute = buildObject.m_buildRoutes[direction].asString();
     //Read the execution sequence buildRoute of build way and write it into the preset queue.
     Json::Value aftermath;
     std::string wayDllPath;
@@ -34,56 +25,25 @@ int Build(void *projectOrProgram, const std::string direction, std::vector<Json:
         hDLL = LoadLibrary(wayDllPath.data());
         hDLLs.push_back(hDLL);
         BuildMethod = (Json::Value(*)(Json::Value))GetProcAddress(hDLL,(*buildRoute_iter).method.data());
-        if(isProjectOrProgram->m_type == TYPE_PROJECT){
-            C_Project *buildObject = (C_Project*)projectOrProgram;
-            (*buildObject).m_BuildWay.push_back(BuildMethod);
-        }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
-            C_Program *buildObject = (C_Program*)projectOrProgram;
-            (*buildObject).m_BuildWay.push_back(BuildMethod);
-        }
-
+        const_cast<T &>(buildObject).m_BuildWay.push_back(BuildMethod);
     }
     //Execute each build way in sequence according to the preset queue.
-    if(isProjectOrProgram->m_type == TYPE_PROJECT){
-        C_Project *buildObject = (C_Project*)projectOrProgram;
-        for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildObject).m_BuildWay.begin(); BuildWay_iter != (*buildObject).m_BuildWay.end(); BuildWay_iter++){
-            //Get basic data for buildInstruct.
-            (*buildObject).m_buildInstruct["basic"]["projectPath"] = (*buildObject).m_path;
-            (*buildObject).m_buildInstruct["basic"]["name"] = (*buildObject).m_name;
-            //Get aftermath from executed buildWay.
-            aftermath = (*BuildWay_iter)((*buildObject).m_buildInstruct);
-            //Get basic data for aftermath.
-            aftermath["basic"]["type"] = TYPE_PROJECT;
-            aftermath["basic"]["name"] = (*buildObject).m_name;
+    for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = const_cast<T &>(buildObject).m_BuildWay.begin(); BuildWay_iter != buildObject.m_BuildWay.end(); BuildWay_iter++){
+        //Get basic data for buildInstruct.
+        const_cast<T &>(buildObject).m_buildInstruct["basic"]["projectPath"] = projectPath;
+        const_cast<T &>(buildObject).m_buildInstruct["basic"]["name"] = buildObject.m_name;
+        //Get aftermath from executed buildWay.
+        aftermath = (*BuildWay_iter)(buildObject.m_buildInstruct);
+        //Get basic data for aftermath.
+        aftermath["basic"]["type"] = (std::is_same<T, C_Project>::value)?(TYPE_PROJECT):(TYPE_PROGRAM);
+        aftermath["basic"]["name"] = buildObject.m_name;
 
-            aftermaths.push_back(aftermath);
-            //Cheak if buildRoute is blocked.
-            if(aftermath["basic"].isMember("isBlock") == true){
-                if(aftermath["basic"]["isBlock"].asBool() == true){
-                    errorCode = 1;
-                    break;
-                }
-            }
-        }
-    }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
-        C_Program *buildObject = (C_Program*)projectOrProgram;
-        for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildObject).m_BuildWay.begin(); BuildWay_iter != (*buildObject).m_BuildWay.end(); BuildWay_iter++){
-            //Get basic data for buildInstruct.
-            (*buildObject).m_buildInstruct["basic"]["projectPath"] = (*buildObject).m_attachedProject->m_path;
-            (*buildObject).m_buildInstruct["basic"]["name"] = (*buildObject).m_name;
-            //Get aftermath from executed buildWay.
-            aftermath = (*BuildWay_iter)((*buildObject).m_buildInstruct);
-            //Get basic data for aftermath.
-            aftermath["basic"]["type"] = TYPE_PROGRAM;
-            aftermath["basic"]["name"] = (*buildObject).m_name;
-
-            aftermaths.push_back(aftermath);
-            //Cheak if buildRoute is blocked.
-            if(aftermath["basic"].isMember("isBlock") == true){
-                if(aftermath["basic"]["isBlock"].asBool() == true){
-                    errorCode = 1;
-                    break;
-                }
+        aftermaths.push_back(aftermath);
+        //Cheak if buildRoute is blocked.
+        if(aftermath["basic"].isMember("isBlock") == true){
+            if(aftermath["basic"]["isBlock"].asBool() == true){
+                errorCode = 1;
+                break;
             }
         }
     }

@@ -38,13 +38,13 @@ int main(int argc, char *argv[]){
         g_programPool.QueryProject(project,projects);
         std::vector<Json::Value> aftermaths;
         if(argv[2] == "-self"){ //build the entire project
-            Build(projects[0],argv[1],aftermaths);
+            Build(*projects[0],argv[1],aftermaths);
         }else{ //build the specified program
             C_Program *program;
             std::vector<C_Program*> programs;
             program->m_name = argv[2];
             projects[0]->QueryProgram(program,programs);
-            Build(programs[0],argv[1],aftermaths);
+            Build(*programs[0],argv[1],aftermaths);
         }
         //Handle aftermaths.
         for(std::vector<Json::Value>::iterator aftermaths_iter = aftermaths.begin(); aftermaths_iter != aftermaths.end(); aftermaths_iter++){

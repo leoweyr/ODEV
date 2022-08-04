@@ -23,12 +23,13 @@ class C_Program;
 class C_Project;
 class C_ProgramPool;
 
+template <typename T> int Build(const T &buildObject, const std::string direction, std::vector<Json::Value> &aftermaths);
+
 struct S_Route{
     int from;
     std::string way;
     std::string method;
 };
-
 
 class C_Program{
     private:
@@ -36,7 +37,7 @@ class C_Program{
         C_Project *m_attachedProject;
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
 
-        friend int Build(void *projectOrProgram, const std::string direction, std::vector<Json::Value> &aftermaths);
+        friend int Build<C_Program>(const C_Program &buildObject, const std::string direction, std::vector<Json::Value> &aftermaths);
 
     public:
         std::string m_name;
@@ -53,7 +54,7 @@ class C_Project{
         std::vector<Json::Value (*)(Json::Value)> m_BuildWay;
 
         friend class C_ProgramPool;
-        friend int Build(void *projectOrProgram, const std::string direction, std::vector<Json::Value> &aftermaths);
+        friend int Build<C_Project>(const C_Project &buildObject, const std::string direction, std::vector<Json::Value> &aftermaths);
 
     public:
         std::string m_name;

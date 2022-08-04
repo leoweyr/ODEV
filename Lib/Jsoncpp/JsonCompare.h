@@ -21,7 +21,7 @@ namespace Json{
             Json::Value same;
 
             void compare(const Json::Value compared, const Json::Value referred);
-            bool isIncluded(const std::string key);
-            bool isSame(const std::string key);
+            bool isIncluded(const std::string key = "");
+            bool isSame(const std::string key = "");
     };
 }

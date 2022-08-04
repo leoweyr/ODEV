@@ -28,34 +28,35 @@ void C_AftermathList::Adjust() {
     S_SortedData<C_Aftermath> sortedAftermath;
     std::vector<S_SortedData<C_Aftermath>> sortedAftermaths;
     std::vector<C_Aftermath> aftermaths_new;
-
     for(std::vector<C_Aftermath>::iterator aftermaths_iter = m_aftermaths.begin(); aftermaths_iter != m_aftermaths.end(); aftermaths_iter++){
         sortedAftermath.weight = (*aftermaths_iter).m_priority;
         sortedAftermath.data = &(*aftermaths_iter);
         sortedAftermaths.push_back(sortedAftermath);
     }
     MergeSortData(sortedAftermaths);
-    //Write aftermaths handler to the already sorted queue.
-    HMODULE hDLL;
-    std::string handlerDllPath;
-    void (*handlerFunction)(Json::Value);
     for(std::vector<S_SortedData<C_Aftermath>>::iterator sortedAftermaths_iter = sortedAftermaths.begin(); sortedAftermaths_iter != sortedAftermaths.end(); sortedAftermaths_iter++){
-        if((*sortedAftermaths_iter).data->m_from == FROM_PRIVATE){
-            handlerDllPath = g_currentProjectPath + "\\" + g_privatePath_aftermath + "\\" + (*sortedAftermaths_iter).data->m_name + ".dll";
-        }else if((*sortedAftermaths_iter).data->m_from == FROM_PUBLIC){
-            handlerDllPath = g_publicPath_aftermath + "\\" + (*sortedAftermaths_iter).data->m_name + ".dll";
-        }
-        hDLL = LoadLibrary(handlerDllPath.data());
-        handlerFunction = (void(*)(Json::Value))GetProcAddress(hDLL, (*sortedAftermaths_iter).data->m_method.data());
-        (*sortedAftermaths_iter).data->m_Handler = handlerFunction;
         aftermaths_new.push_back(*((*sortedAftermaths_iter).data));
-        FreeLibrary(hDLL);
     }
     m_aftermaths = aftermaths_new;
 }
 
-void C_AftermathList::Handle(const Json::Value buildWayReturn) {
+void C_AftermathList::Handle(const Json::Value aftermath) {
+    //Write aftermaths handler to the already sorted queue.
+    HMODULE hDLL;
+    std::vector<HMODULE> hDLLs;
+    std::string aftermathHandlerPath;
+    for(std::vector<C_Aftermath>::iterator aftermaths_iter = m_aftermaths.begin(); aftermaths_iter != m_aftermaths.end(); aftermaths_iter++){
+        aftermathHandlerPath = ((*aftermaths_iter).m_from == FROM_PRIVATE)?(g_currentProjectPath + "\\" + g_privatePath_aftermath + "\\" + (*aftermaths_iter).m_name + ".dll"):(g_publicPath_aftermath + "\\" + (*aftermaths_iter).m_name + ".dll");
+        hDLL = LoadLibrary(aftermathHandlerPath.data());
+        hDLLs.push_back(hDLL);
+        (*aftermaths_iter).m_Handler = (void(*)(Json::Value))GetProcAddress(hDLL, (*aftermaths_iter).m_method.data());
+    }
+    //Handle each aftermath in sequence according to the preset queue.
     for(std::vector<C_Aftermath>::reverse_iterator aftermaths_iter = m_aftermaths.rbegin(); aftermaths_iter != m_aftermaths.rend(); aftermaths_iter++){
-        (*aftermaths_iter).m_Handler(buildWayReturn);
+        (*aftermaths_iter).m_Handler(aftermath);
+    }
+    //Free DLLs' handle.
+    for(std::vector<HMODULE>::iterator hDLLs_iter = hDLLs.begin(); hDLLs_iter != hDLLs.end(); hDLLs_iter++){
+        FreeLibrary((*hDLLs_iter));
     }
 }

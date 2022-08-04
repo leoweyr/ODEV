@@ -3,6 +3,10 @@
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
   <component name="CidrRootsConfiguration">
     <sourceRoots>
+      <file path="$PROJECT_DIR$/AddonSDK" />
+      <file path="$PROJECT_DIR$/ExampleAftermath" />
+      <file path="$PROJECT_DIR$/ExampleBuildWay" />
+      <file path="$PROJECT_DIR$/ExamplePlugin" />
       <file path="$PROJECT_DIR$/Source" />
     </sourceRoots>
     <libraryRoots>

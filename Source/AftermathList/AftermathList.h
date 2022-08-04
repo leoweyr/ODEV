@@ -40,5 +40,5 @@ class C_AftermathList{
         void AddAftermath(const C_Aftermath aftermath);
         void RemoveProgram(const C_Aftermath* aftermath);
         void Adjust();
-        void Handle(const Json::Value buildWayReturn);
+        void Handle(const Json::Value aftermath);
 };

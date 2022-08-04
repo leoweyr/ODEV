@@ -1,5 +1,6 @@
 #include "SortData_instantiate.h"
 
+/* template */
 template <typename T> S_SortedData<T> MinData(const S_SortedData<T> dataX, const S_SortedData<T> dataY, int *which){
     if(dataX.weight == dataY.weight){
         *which = 0;
@@ -61,4 +62,5 @@ template <typename T> void MergeSortData(const std::vector<S_SortedData<T>> &dat
     const_cast<std::vector<S_SortedData<T>> &>(data) = dataPart;
 }
 
-template void MergeSortData<C_Aftermath>(const std::vector<S_SortedData<C_Aftermath>> &data); //instantiate
+/* instantiate */
+template void MergeSortData<C_Aftermath>(const std::vector<S_SortedData<C_Aftermath>> &data);

@@ -14,14 +14,13 @@
 */
 
 extern C_ProgramPool g_programPool;
-extern C_AftermathList g_aftermathList;
 
 int main(int argc, char *argv[]){
     SetGlobalConfig();
     //Check if the current working directory contains an existing project in ODEV.
     std::string currentProjectPath = CURRENT_WORKING_DIRECTORY_PATH;
     if(MatchProjectPath(currentProjectPath) == false){
-        //TODO:If the current working directory does not contain an existing project in ODEV.
+        //TODO: If the current working directory does not contain an existing project in ODEV.
         ;
     }
     //Required global install operation.
@@ -29,7 +28,7 @@ int main(int argc, char *argv[]){
     InstallAftermathList(currentProjectPath);
 
     if(argv[1][0] == '-'){
-        //TODO:Other command interaction features.
+        //TODO: Other command interaction features.
         ;
     }else{ //set build direction
         C_Project *project;
@@ -38,17 +37,13 @@ int main(int argc, char *argv[]){
         g_programPool.QueryProject(project,projects);
         std::vector<Json::Value> aftermaths;
         if(argv[2] == "-self"){ //build the entire project
-            Build(projects[0],argv[1],aftermaths);
+            Build(projects[0],argv[1]);
         }else{ //build the specified program
             C_Program *program;
             std::vector<C_Program*> programs;
             program->m_name = argv[2];
             projects[0]->QueryProgram(program,programs);
-            Build(programs[0],argv[1],aftermaths);
-        }
-        //Handle aftermaths.
-        for(std::vector<Json::Value>::iterator aftermaths_iter = aftermaths.begin(); aftermaths_iter != aftermaths.end(); aftermaths_iter++){
-            g_aftermathList.Handle(*aftermaths_iter);
+            Build(programs[0],argv[1]);
         }
     }
     //Required global uninstall operation.

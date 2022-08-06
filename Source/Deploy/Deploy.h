@@ -10,7 +10,6 @@
 /*
 #include <string>
 #include <vector>
-#include <map>
 
 #include "../../Lib/Jsoncpp/Jsoncpp.h"
 #include "../../Lib/Bitscode/Bitscode.h"
@@ -21,10 +20,6 @@
 
 /* Basic Operation */
 void SetGlobalConfig();
-
-void InDynamicBuildRoutes(const std::string projectPath, const Json::Value staticBuildRoutes, const std::map<std::string, std::vector<S_Route>> &dynamicBuildRoutes);
-
-void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const std::string projectPath, const Json::Value &staticBuildRoute);
 
 void InDynamicProgram(const Json::Value program, const C_Project &attachedProject);
 

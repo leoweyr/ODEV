@@ -1,91 +1,127 @@
 #include "ProgramPool.h"
 
-C_Program::C_Program(C_Project &attachedProject) {
-    m_attachedProject = &attachedProject;
-}
+extern C_AftermathList g_aftermathList;
 
-int Build(void *projectOrProgram, const std::string direction, std::vector<Json::Value> &aftermaths) {
+int Build(void *projectOrProgram, const std::string direction) {
     int errorCode = 0;
-    //Identify whether param<c_projectOrc_program> points to class<C_Project> object or points to class<C_Program> object, get buildRoute of the specified direction in member<m_buildRoutes>.
+    //Get basic data pointers of buildObject and buildRoute of the specified direction in member<m_buildRoutes>.
     C_Project *isProjectOrProgram = (C_Project*)projectOrProgram;
-    std::string projectPath;
-    std::vector<S_Route> buildRoute;
+    int *type;
+    std::string *projectPath;
+    std::string *name;
+    Json::Value *buildInstruct;
+    S_Route *buildRoute;
+    std::vector<Json::Value (*)(Json::Value)> *buildWays;
     if(isProjectOrProgram->m_type == TYPE_PROJECT){
         C_Project *buildObject = (C_Project*)projectOrProgram;
-        projectPath = (*buildObject).m_path;
-        buildRoute = (*buildObject).m_buildRoutes[direction];
+        type = &(*buildObject).m_type;
+        projectPath = &(*buildObject).m_path;
+        name = &(*buildObject).m_name;
+        buildInstruct = &(*buildObject).m_buildInstruct;
+        for(std::vector<S_Route>::iterator buildRoutes_iter = (*buildObject).m_buildRoutes.begin(); buildRoutes_iter != (*buildObject).m_buildRoutes.end(); buildRoutes_iter++){
+            if((*buildRoutes_iter).direction == direction){
+                buildRoute = &(*buildRoutes_iter);
+                break;
+            }
+        }
+        buildWays = &(*buildObject).m_BuildWays;
     }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
         C_Program *buildObject = (C_Program*)projectOrProgram;
-        projectPath = (*buildObject).m_attachedProject->m_path;
-        buildRoute = (*buildObject).m_buildRoutes[direction];
+        type = &(*buildObject).m_type;
+        projectPath = &(*buildObject).m_attachedProject->m_path;
+        name = &(*buildObject).m_name;
+        for(std::vector<S_Route>::iterator buildRoutes_iter = (*buildObject).m_buildRoutes.begin(); buildRoutes_iter != (*buildObject).m_buildRoutes.end(); buildRoutes_iter++){
+            if((*buildRoutes_iter).direction == direction){
+                buildRoute = &(*buildRoutes_iter);
+                break;
+            }
+        }
+        buildWays = &(*buildObject).m_BuildWays;
     }
     //Read the execution sequence buildRoute of build way and write it into the preset queue.
-    Json::Value aftermath;
     std::string wayDllPath;
     HMODULE hDLL;
     std::vector<HMODULE> hDLLs;
     Json::Value (*BuildMethod)(Json::Value);
-    for(std::vector<S_Route>::iterator buildRoute_iter = buildRoute.begin(); buildRoute_iter != buildRoute.end(); buildRoute_iter++){
-        if((*buildRoute_iter).from == FROM_PRIVATE){
-            wayDllPath = projectPath + "\\" + g_privatePath_buildWay + "\\" + (*buildRoute_iter).way + ".dll";
-        }else if((*buildRoute_iter).from == FROM_PUBLIC){
-            wayDllPath = g_publicPath_buildWay + "\\" + (*buildRoute_iter).way + ".dll";
+    int buildRouteStep_max = 0;
+    for(std::vector<S_RouteStep>::iterator buildRouteSteps_iter = buildRoute->routeSteps.begin(); buildRouteSteps_iter != buildRoute->routeSteps.end(); buildRouteSteps_iter++){
+        if((*buildRouteSteps_iter).from == FROM_PRIVATE){
+            wayDllPath = *projectPath + "\\" + g_privatePath_buildWay + "\\" + (*buildRouteSteps_iter).way + ".dll";
+        }else if((*buildRouteSteps_iter).from == FROM_PUBLIC){
+            wayDllPath = g_publicPath_buildWay + "\\" + (*buildRouteSteps_iter).way + ".dll";
         }
         hDLL = LoadLibrary(wayDllPath.data());
         hDLLs.push_back(hDLL);
-        BuildMethod = (Json::Value(*)(Json::Value))GetProcAddress(hDLL,(*buildRoute_iter).method.data());
-        if(isProjectOrProgram->m_type == TYPE_PROJECT){
+        BuildMethod = (Json::Value(*)(Json::Value))GetProcAddress(hDLL,(*buildRouteSteps_iter).method.data());
+        if(*type == TYPE_PROJECT){
             C_Project *buildObject = (C_Project*)projectOrProgram;
-            (*buildObject).m_BuildWay.push_back(BuildMethod);
-        }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
+            (*buildObject).m_BuildWays.push_back(BuildMethod);
+        }else if(*type == TYPE_PROGRAM){
             C_Program *buildObject = (C_Program*)projectOrProgram;
-            (*buildObject).m_BuildWay.push_back(BuildMethod);
+            (*buildObject).m_BuildWays.push_back(BuildMethod);
         }
-
+        buildRouteStep_max ++;
     }
     //Execute each build way in sequence according to the preset queue.
-    if(isProjectOrProgram->m_type == TYPE_PROJECT){
-        C_Project *buildObject = (C_Project*)projectOrProgram;
-        for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildObject).m_BuildWay.begin(); BuildWay_iter != (*buildObject).m_BuildWay.end(); BuildWay_iter++){
+    int buildRouteStep = 1;
+    for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildWays).begin(); BuildWay_iter != (*buildWays).end(); BuildWay_iter++){
+        std::string typeDisplay = (*type == TYPE_PROGRAM)?("PROGRAM"):("PROJECT");
+        for(int isExecute = 0;isExecute < 2;isExecute++){
+            //Print dividing line.
+            for(int i=0;i<120;i++){
+                if(i == 0 && isExecute == 0){
+                    std::cout << "BEGIN";
+                    i += 4;
+                }else if(i == 0 && errorCode == 1){
+                    std::cout << PRINT_RED << "BLOCK";
+                    i += 4;
+                }else if(i == 0 && isExecute == 1){
+                    std::cout << "END";
+                    i += 2;
+                }else if(i < 120){
+                    std::cout << "-";
+                }else{
+                    std::cout << "-" << PRINT_NONE << std::endl;
+                }
+            }
+
+            if(isExecute == 0){
+                //Print basic build info, alternative Display Format Schemes: | TYPE | NAME | DIREACTION | ROUNT | STEP | WAY | METHOD |.
+                std::string buildRoute_isPublic = (buildRoute->from == FROM_PUBLIC)?("PUB "):("");
+                std::string buildWay_isPublic = (buildRoute->routeSteps[buildRouteStep - 1].from == FROM_PUBLIC)?("PUB "):("");
+                std::cout << "| TYPE: " << typeDisplay
+                          << " | NAME: " << *name
+                          << " | ROUTE: " << buildRoute_isPublic << buildRoute->name << " " << buildRouteStep << "/" << buildRouteStep_max
+                          << " | WAY: " << buildWay_isPublic << buildRoute->routeSteps[buildRouteStep - 1].way
+                          << " | METHOD: " << buildRoute->routeSteps[buildRouteStep - 1].method
+                          << " |" << std::endl;
+            }else{
+                break;
+            }
+            Json::Value aftermath;
             //Get basic data for buildInstruct.
-            (*buildObject).m_buildInstruct["basic"]["projectPath"] = (*buildObject).m_path;
-            (*buildObject).m_buildInstruct["basic"]["name"] = (*buildObject).m_name;
+            (*buildInstruct)["basic"]["projectPath"] = *projectPath;
+            (*buildInstruct)["basic"]["name"] = *name;
             //Get aftermath from executed buildWay.
-            aftermath = (*BuildWay_iter)((*buildObject).m_buildInstruct);
+
+            aftermath = (*BuildWay_iter)(buildInstruct);
+
             //Get basic data for aftermath.
             aftermath["basic"]["type"] = TYPE_PROJECT;
-            aftermath["basic"]["name"] = (*buildObject).m_name;
+            aftermath["basic"]["name"] = *name;
 
-            aftermaths.push_back(aftermath);
+            g_aftermathList.Handle(aftermath);
             //Cheak if buildRoute is blocked.
             if(aftermath["basic"].isMember("isBlock") == true){
                 if(aftermath["basic"]["isBlock"].asBool() == true){
                     errorCode = 1;
-                    break;
                 }
             }
         }
-    }else if(isProjectOrProgram->m_type == TYPE_PROGRAM){
-        C_Program *buildObject = (C_Program*)projectOrProgram;
-        for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildObject).m_BuildWay.begin(); BuildWay_iter != (*buildObject).m_BuildWay.end(); BuildWay_iter++){
-            //Get basic data for buildInstruct.
-            (*buildObject).m_buildInstruct["basic"]["projectPath"] = (*buildObject).m_attachedProject->m_path;
-            (*buildObject).m_buildInstruct["basic"]["name"] = (*buildObject).m_name;
-            //Get aftermath from executed buildWay.
-            aftermath = (*BuildWay_iter)((*buildObject).m_buildInstruct);
-            //Get basic data for aftermath.
-            aftermath["basic"]["type"] = TYPE_PROGRAM;
-            aftermath["basic"]["name"] = (*buildObject).m_name;
-
-            aftermaths.push_back(aftermath);
-            //Cheak if buildRoute is blocked.
-            if(aftermath["basic"].isMember("isBlock") == true){
-                if(aftermath["basic"]["isBlock"].asBool() == true){
-                    errorCode = 1;
-                    break;
-                }
-            }
+        if(errorCode == 1){
+            break;
         }
+        buildRouteStep ++;
     }
     //Free DLLs' handle.
     for(std::vector<HMODULE>::iterator hDLLs_iter = hDLLs.begin(); hDLLs_iter != hDLLs.end(); hDLLs_iter++){
@@ -111,6 +147,10 @@ void C_Project::QueryProgram(const C_Program *condition, std::vector<C_Program*>
         }
         results.push_back(&(*programs_iter));
     }
+}
+
+C_Program::C_Program(C_Project &attachedProject) {
+    m_attachedProject = &attachedProject;
 }
 
 void C_Project::AddProgram(const C_Program program) {

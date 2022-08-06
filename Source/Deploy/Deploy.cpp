@@ -30,38 +30,48 @@ void SetGlobalConfig(){
     g_privatePath_aftermath = g_privatePath + "\\" + "aftermath";
 }
 
-void InDynamicBuildRoutes(const std::string projectPath, const Json::Value staticBuildRoutes, const std::map<std::string, std::vector<S_Route>> &dynamicBuildRoutes){
+void InDynamicBuildRoutes(const std::string projectPath, const Json::Value staticBuildRoutes, const std::vector<S_Route> &dynamicBuildRoutes){ //non-shared
     Json::Value route;
-    S_Route buildRouteStep;
-    std::vector<S_Route> buildRoute;
-    for(Json::Value::iterator buildRoutes_iter = const_cast<Json::Value &>(staticBuildRoutes).begin(); buildRoutes_iter != staticBuildRoutes.end(); buildRoutes_iter++){
-        if((*buildRoutes_iter)["from"] == FROM_PRIVATE){
-            N_File::C_File(projectPath + "\\" + g_privatePath_buildRoute + "\\" + (*buildRoutes_iter)["route"].asString() + ".json").Read(route);
-        }else if((*buildRoutes_iter)["from"] == FROM_PUBLIC){
-            N_File::C_File(g_publicPath_buildRoute + "\\" + (*buildRoutes_iter)["route"].asString() + ".json").Read(route);
+    S_RouteStep buildRouteStep;
+    std::vector<S_RouteStep> buildRouteSteps;
+    for(Json::Value::iterator staticBuildRoutes_iter = const_cast<Json::Value &>(staticBuildRoutes).begin(); staticBuildRoutes_iter != staticBuildRoutes.end(); staticBuildRoutes_iter++){
+        if((*staticBuildRoutes_iter)["from"] == FROM_PRIVATE){
+            N_File::C_File(projectPath + "\\" + g_privatePath_buildRoute + "\\" + (*staticBuildRoutes_iter)["route"].asString() + ".json").Read(route);
+        }else if((*staticBuildRoutes_iter)["from"] == FROM_PUBLIC){
+            N_File::C_File(g_publicPath_buildRoute + "\\" + (*staticBuildRoutes_iter)["route"].asString() + ".json").Read(route);
         }
         for(Json::Value::iterator route_iter = route.begin(); route_iter != route.end(); route_iter++){
             buildRouteStep.from = (*route_iter)["from"].asInt();
             buildRouteStep.way = (*route_iter)["way"].asString();
             buildRouteStep.method = (*route_iter)["method"].asString();
-            buildRoute.push_back(buildRouteStep);
+            buildRouteSteps.push_back(buildRouteStep);
         }
-        //Remove duplicate direction of buildRoute in buildRoutes.
-        while (dynamicBuildRoutes.count((*buildRoutes_iter)["direction"].asString()) != 0){
-            std::map<std::string, std::vector<S_Route>>::iterator sameDirection = const_cast<std::map<std::string, std::vector<S_Route>> &>(dynamicBuildRoutes).find((*buildRoutes_iter)["direction"].asString());
-            const_cast<std::map<std::string, std::vector<S_Route>> &>(dynamicBuildRoutes).erase(sameDirection);
+        //Remove duplicate direction of buildRouteStep in buildRouteSteps.
+        for(std::vector<S_Route>::iterator dynamicstaticBuildRoutes_iter = const_cast<std::vector<S_Route> &>(dynamicBuildRoutes).begin(); dynamicstaticBuildRoutes_iter != dynamicBuildRoutes.end(); dynamicstaticBuildRoutes_iter++){
+            if((*dynamicstaticBuildRoutes_iter).direction == (*staticBuildRoutes_iter)["direction"].asString()){
+                const_cast<std::vector<S_Route> &>(dynamicBuildRoutes).erase(dynamicstaticBuildRoutes_iter);
+            }
         }
-
-        const_cast<std::map<std::string, std::vector<S_Route>> &>(dynamicBuildRoutes).insert(std::pair<std::string, std::vector<S_Route>>((*buildRoutes_iter)["direction"].asString(), buildRoute));
+        //Enter buildRoute.
+        S_Route buildRoute;
+        buildRoute.direction = (*staticBuildRoutes_iter)["direction"].asString();
+        if((*staticBuildRoutes_iter)["from"] == FROM_PRIVATE){
+            buildRoute.from = FROM_PRIVATE;
+        }else if((*staticBuildRoutes_iter)["from"] == FROM_PUBLIC){
+            buildRoute.from = FROM_PUBLIC;
+        }
+        buildRoute.name = (*staticBuildRoutes_iter)["route"].asString();
+        buildRoute.routeSteps = buildRouteSteps;
+        const_cast<std::vector<S_Route> &>(dynamicBuildRoutes).push_back(buildRoute);
     }
 }
 
-void MatchStaticBuildRoute(const std::vector<S_Route> dynamicBuildRoute, const std::string projectPath, const Json::Value &staticBuildRoute){
+void MatchStaticBuildRoute(const std::vector<S_RouteStep> dynamicBuildRoute, const std::string projectPath, const Json::Value &staticBuildRoute){ //non-shared
     Json::Value route_dynamic, routeUnit, route_static;
     std::vector<std::string> buildRoutes;
     std::string buildRoutesDir_path;
     bool isStaticBuildRouteExist = false;
-    for(std::vector<S_Route>::iterator buildRoute_iter = const_cast<std::vector<S_Route> &>(dynamicBuildRoute).begin(); buildRoute_iter != dynamicBuildRoute.end(); buildRoute_iter++){
+    for(std::vector<S_RouteStep>::iterator buildRoute_iter = const_cast<std::vector<S_RouteStep> &>(dynamicBuildRoute).begin(); buildRoute_iter != dynamicBuildRoute.end(); buildRoute_iter++){
         routeUnit["from"] = (*buildRoute_iter).from;
         routeUnit["way"] = (*buildRoute_iter).way;
         routeUnit["method"] = (*buildRoute_iter).method;
@@ -115,9 +125,9 @@ void OutStaticProgram(const std::vector<C_Program*> targetPrograms, const C_Proj
         program["name"] = (*targetPrograms_iter)->m_name;
         program["buildInstruct"] = (*targetPrograms_iter)->m_buildInstruct;
         //Matches the static storage of program's buildRoute which is in the global programPool.
-        for(std::map<std::string, std::vector<S_Route>>::iterator buildRoutes_iter = (*targetPrograms_iter)->m_buildRoutes.begin(); buildRoutes_iter != (*targetPrograms_iter)->m_buildRoutes.end(); buildRoutes_iter++){
-            MatchStaticBuildRoute((*buildRoutes_iter).second, attachedProject.m_path, buildRoute);
-            buildRoute["direction"] = (*buildRoutes_iter).first;
+        for(std::vector<S_Route>::iterator buildRoutes_iter = (*targetPrograms_iter)->m_buildRoutes.begin(); buildRoutes_iter != (*targetPrograms_iter)->m_buildRoutes.end(); buildRoutes_iter++){
+            MatchStaticBuildRoute((*buildRoutes_iter).routeSteps, attachedProject.m_path, buildRoute);
+            buildRoute["direction"] = (*buildRoutes_iter).direction;
             program["buildRoutes"].append(buildRoute);
         }
 
@@ -153,9 +163,9 @@ void OutStaticProject(const std::vector<C_Project*> targetProjects, std::vector<
         project["path"] = (*targetProjects_iter)->m_path;
         project["buildInstruct"] = (*targetProjects_iter)->m_buildInstruct;
         //Matches the static storage of project's buildRoute which is in the global programPool.
-        for(std::map<std::string, std::vector<S_Route>>::iterator buildRoutes_iter = (*targetProjects_iter)->m_buildRoutes.begin(); buildRoutes_iter != (*targetProjects_iter)->m_buildRoutes.end(); buildRoutes_iter++){
-            MatchStaticBuildRoute((*buildRoutes_iter).second, (*targetProjects_iter)->m_path, buildRoute);
-            buildRoute["direction"] = (*buildRoutes_iter).first;
+        for(std::vector<S_Route>::iterator buildRoutes_iter = (*targetProjects_iter)->m_buildRoutes.begin(); buildRoutes_iter != (*targetProjects_iter)->m_buildRoutes.end(); buildRoutes_iter++){
+            MatchStaticBuildRoute((*buildRoutes_iter).routeSteps, (*targetProjects_iter)->m_path, buildRoute);
+            buildRoute["direction"] = (*buildRoutes_iter).direction;
             project["buildRoutes"].append(buildRoute);
         }
 

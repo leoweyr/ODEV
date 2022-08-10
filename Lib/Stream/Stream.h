@@ -1,0 +1,16 @@
+#pragma once
+
+#define PRINT_NONE "\033[m"
+#define PRINT_RED "\033[0;32;31m"
+#define PRINT_LIGHT_RED "\033[1;31m"
+#define PRINT_GREEN "\033[0;32;32m"
+#define PRINT_LIGHT_GREEN "\033[1;32m"
+#define PRINT_BLUE "\033[0;32;34m"
+#define PRINT_LIGHT_BLUE "\033[1;34m"
+#define PRINT_CYAN "\033[0;36m"
+#define PRINT_LIGHT_CYAN "\033[1;36m"
+#define PRINT_PURPLE "\033[0;35m"
+#define PRINT_LIGHT_PURPLE "\033[1;35m"
+#define PRINT_YELLOW "\033[1;33m"
+#define PRINT_WHITE "\033[1;37m"
+#define PRINT_DARY_GRAY "\033[1;30m"

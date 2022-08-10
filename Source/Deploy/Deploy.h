@@ -1,11 +1,13 @@
 #pragma once
 
 #include "../../Lib/File/File.h"
+#include "../../Lib/System/System.h"
 
 #include "../ProgramPool/ProgramPool.h"
 #include "../AftermathList/AftermathList.h"
 
 #pragma comment(lib,"../../Lib/File/File.lib")
+#pragma comment(lib,"../../Lib/System/System.lib")
 
 /*
 #include <string>

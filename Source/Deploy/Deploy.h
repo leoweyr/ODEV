@@ -21,7 +21,6 @@
  */
 
 /* Basic Operation */
-void SetGlobalConfig();
 
 void InDynamicProgram(const Json::Value program, const C_Project &attachedProject);
 
@@ -36,6 +35,8 @@ void InDynamicAftermath(const Json::Value aftermath);
 void OutStaticAftermath(const std::vector<C_Aftermath*> targetAftermaths, std::vector<Json::Value> &aftermaths);
 
 /* Detailed Task */
+void SetGlobalConfig();
+
 bool MatchProjectPath(const std::string &path);
 
 void InstallProgramPool(const std::string currentProjectPath);
@@ -45,3 +46,5 @@ void UninstallProgramPool(const std::string currentProjectPath);
 void InstallAftermathList(const std::string currentProjectPath);
 
 void UninstallAftermathList(const std::string currentProjectPath);
+
+void CheckPrivatePath();

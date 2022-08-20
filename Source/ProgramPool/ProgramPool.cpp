@@ -66,58 +66,34 @@ int Build(void *projectOrProgram, const std::string direction) {
     int buildRouteStep = 1;
     for(std::vector<Json::Value(*)(Json::Value)>::iterator BuildWay_iter = (*buildWays).begin(); BuildWay_iter != (*buildWays).end(); BuildWay_iter++){
         std::string typeDisplay = (*type == TYPE_PROGRAM)?("PROGRAM"):("PROJECT");
-        for(int isExecute = 0;isExecute < 2;isExecute++){
-            //Print dividing line.
-            for(int i=0;i<120;i++){
-                if(i == 0 && isExecute == 0){
-                    std::cout << "BEGIN";
-                    i += 4;
-                }else if(i == 0 && errorCode == 1){
-                    std::cout << PRINT_RED << "BLOCK";
-                    i += 4;
-                }else if(i == 0 && isExecute == 1){
-                    std::cout << "END";
-                    i += 2;
-                }else if(i < 120){
-                    std::cout << "-";
-                }else{
-                    std::cout << "-" << PRINT_NONE << std::endl;
+        CONSOLE_PRINT_BUILD(
+                errorCode,
+                buildRoute,
+                FROM_PUBLIC,
+                buildRouteStep,
+                typeDisplay,
+                name,
+                buildRouteStep_max,
+                Json::Value aftermath;
+                //Get basic data for buildInstruct.
+                (*buildInstruct)["basic"]["projectPath"] = *projectPath;
+                (*buildInstruct)["basic"]["name"] = *name;
+                //Get aftermath from executed buildWay.
+
+                aftermath = (*BuildWay_iter)(buildInstruct);
+
+                //Get basic data for aftermath.
+                aftermath["basic"]["type"] = TYPE_PROJECT;
+                aftermath["basic"]["name"] = *name;
+
+                g_aftermathList.Handle(aftermath);
+                //Cheak if buildRoute is blocked.
+                if(aftermath["basic"].isMember("isBlock") == true){
+                    if(aftermath["basic"]["isBlock"].asBool() == true){
+                        errorCode = 1;
+                    }
                 }
-            }
-
-            if(isExecute == 0){
-                //Print basic build info, alternative Display Format Schemes: | TYPE | NAME | DIREACTION | ROUNT | STEP | WAY | METHOD |.
-                std::string buildRoute_isPublic = (buildRoute->from == FROM_PUBLIC)?("PUB "):("");
-                std::string buildWay_isPublic = (buildRoute->routeSteps[buildRouteStep - 1].from == FROM_PUBLIC)?("PUB "):("");
-                std::cout << "| TYPE: " << typeDisplay
-                          << " | NAME: " << *name
-                          << " | ROUTE: " << buildRoute_isPublic << buildRoute->name << " " << buildRouteStep << "/" << buildRouteStep_max
-                          << " | WAY: " << buildWay_isPublic << buildRoute->routeSteps[buildRouteStep - 1].way
-                          << " | METHOD: " << buildRoute->routeSteps[buildRouteStep - 1].method
-                          << " |" << std::endl;
-            }else{
-                break;
-            }
-            Json::Value aftermath;
-            //Get basic data for buildInstruct.
-            (*buildInstruct)["basic"]["projectPath"] = *projectPath;
-            (*buildInstruct)["basic"]["name"] = *name;
-            //Get aftermath from executed buildWay.
-
-            aftermath = (*BuildWay_iter)(buildInstruct);
-
-            //Get basic data for aftermath.
-            aftermath["basic"]["type"] = TYPE_PROJECT;
-            aftermath["basic"]["name"] = *name;
-
-            g_aftermathList.Handle(aftermath);
-            //Cheak if buildRoute is blocked.
-            if(aftermath["basic"].isMember("isBlock") == true){
-                if(aftermath["basic"]["isBlock"].asBool() == true){
-                    errorCode = 1;
-                }
-            }
-        }
+                )
         if(errorCode == 1){
             break;
         }

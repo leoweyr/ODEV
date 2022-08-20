@@ -29,8 +29,8 @@ BUILDMETHOD(Exe){
             dependencyFiles += " " + (*dependency_iter).asString();
         }
     }
-    //Compile source files into executable files.
-    stepTitle = "Compile source files into executable files";
+    //Compile source files into an executable file.
+    stepTitle = "Compile source files into an executable file";
     cmd = (sourceType == TYPE_C)?("gcc" + sourceFiles + dependencyFiles + " -o " + buildPath + "\\" + buildInstruct["basic"]["name"].asString()):("g++" + sourceFiles + dependencyFiles + " -o " + buildPath + "\\" + buildInstruct["basic"]["name"].asString());
     ExeCmd(cmd.data(),feedback);
     //Check if the compilation was successful.
@@ -162,8 +162,8 @@ BUILDMETHOD(Dll){
             dependencyFiles += " " + (*dependency_iter).asString();
         }
     }
-    //Compile source files into dynamic link library files.
-    stepTitle = "Compile source files into dynamic link library files";
+    //Compile source files into a dynamic link library file.
+    stepTitle = "Compile source files into a dynamic link library file";
     cmd = (sourceType == TYPE_C)?("gcc" + sourceFiles + dependencyFiles + " -shared -o " + buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".dll"):("g++" + sourceFiles + dependencyFiles + " -shared -o " + buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".dll");
     ExeCmd(cmd.data(),feedback);
     //Check if the compilation was successful.

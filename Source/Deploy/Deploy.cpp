@@ -17,19 +17,6 @@ std::string g_privatePath_buildRoute;
 std::string g_privatePath_menu;
 std::string g_privatePath_aftermath;
 
-void SetGlobalConfig(){
-    g_selfPath = CURRENT_EXE_PATH;
-    g_publicPath = g_selfPath + "\\" + "public";
-    g_publicPath_buildWay = g_publicPath + "\\" + "buildWay";
-    g_publicPath_buildRoute = g_publicPath + "\\" + "buildRoute";
-    g_publicPath_aftermath = g_publicPath + "\\" + "aftermath";
-    g_privatePath = ".ODEV";
-    g_privatePath_buildWay = g_privatePath + "\\" + "graph\\way";
-    g_privatePath_buildRoute = g_privatePath + "\\" + "graph\\route";
-    g_privatePath_menu = g_privatePath + "\\" + "graph\\menu";
-    g_privatePath_aftermath = g_privatePath + "\\" + "aftermath";
-}
-
 void InDynamicBuildRoutes(const std::string projectPath, const Json::Value staticBuildRoutes, const std::vector<S_Route> &dynamicBuildRoutes){ //non-shared
     Json::Value route;
     S_RouteStep buildRouteStep;
@@ -201,6 +188,19 @@ void OutStaticAftermath(const std::vector<C_Aftermath*> targetAftermaths, std::v
     }
 }
 
+void SetGlobalConfig(){
+    g_selfPath = CURRENT_EXE_PATH;
+    g_publicPath = g_selfPath + "\\" + "public";
+    g_publicPath_buildWay = g_publicPath + "\\" + "buildWay";
+    g_publicPath_buildRoute = g_publicPath + "\\" + "buildRoute";
+    g_publicPath_aftermath = g_publicPath + "\\" + "aftermath";
+    g_privatePath = ".ODEV";
+    g_privatePath_buildWay = g_privatePath + "\\" + "graph\\way";
+    g_privatePath_buildRoute = g_privatePath + "\\" + "graph\\route";
+    g_privatePath_menu = g_privatePath + "\\" + "graph\\menu";
+    g_privatePath_aftermath = g_privatePath + "\\" + "aftermath";
+}
+
 bool MatchProjectPath(const std::string &path){
     Json::Value projectPaths;
     std::vector<std::string> splitProjectPathArray, splitPathArray, splitPathArray_specifiedDepth;
@@ -302,4 +302,11 @@ void UninstallAftermathList(const std::string currentProjectPath){
     }
     N_File::C_File(g_publicPath_aftermath + "\\" + "aftermaths.json").Write(aftermaths_public);
     N_File::C_File(currentProjectPath + "\\" + g_privatePath_aftermath + "\\" + "aftermaths.json").Write(aftermaths_private);
+}
+
+void CheckPrivatePath(){
+    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_menu).isExist(1);
+    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_buildRoute).isExist(1);
+    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_buildWay).isExist(1);
+    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_aftermath).isExist(1);
 }

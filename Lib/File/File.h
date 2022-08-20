@@ -3,6 +3,7 @@
 #include "direct.h"
 #include "io.h"
 #include "unistd.h"
+#include "sys/stat.h"
 
 #include <fstream>
 
@@ -18,7 +19,13 @@
 #include <vector>
  */
 
+#define IS_NULL 0
+#define IS_FILE 1
+#define IS_DIR 2
+
 namespace N_File{
+    int Is(const std::string path);
+
     class C_File{
         private:
             std::string m_path;
@@ -37,10 +44,13 @@ namespace N_File{
     };
 
     class C_Dir{
+        private:
+            int m_delete_roll = 0;
         public:
             std::string m_path;
             C_Dir(const std::string path);
             bool isExist(const int mode = 0);
             std::vector<std::string> List();
+            bool Delete(const std::string path = "");
     };
 }

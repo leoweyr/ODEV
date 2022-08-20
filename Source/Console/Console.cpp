@@ -9,28 +9,67 @@
 
 #include "../ProgramPool/ProgramPool.h"
 #include "../AftermathList/AftermathList.h"
+#include "Style.h"
 
 #pragma comment(lib,"../../Lib/File/File.lib")
 */
 
 extern C_ProgramPool g_programPool;
+extern std::string g_selfPath;
+extern std::string g_privatePath;
+extern std::string g_privatePath_menu;
 
 int main(int argc, char *argv[]){
     SetGlobalConfig();
+    bool isProjectExist = true;
     //Check if the current working directory contains an existing project in ODEV.
     std::string currentProjectPath = CURRENT_WORKING_DIRECTORY_PATH;
     if(MatchProjectPath(currentProjectPath) == false){
-        //TODO: If the current working directory does not contain an existing project in ODEV.
-        ;
+        isProjectExist = false;
+        CONSOLE_PRINT_NORMAL_ERROR("The current path contains few project!")
     }
     //Required global install operation.
-    InstallProgramPool(currentProjectPath);
-    InstallAftermathList(currentProjectPath);
-
+    if(isProjectExist == true){
+        SetCurrentWorkingDirectoryPath(currentProjectPath);
+        InstallProgramPool(currentProjectPath);
+        InstallAftermathList(currentProjectPath);
+        CheckPrivatePath();
+    }
     if(argv[1][0] == '-'){
-        //TODO: Other command interaction features.
-        ;
-    }else{ //set build direction
+        if(argv[1] == "-new" && argc - 1 == 3){ //link new project
+            //Filing new project in ODEV.
+            Json::Value projects;
+            N_File::C_File projects_json(g_selfPath + "\\projects.json");
+            projects_json.Read(projects);
+            projects.append(currentProjectPath);
+            projects_json.Write(projects);
+            //Initialize private path in the local project directory.
+            Json::Value project;
+            project["name"] = argv[2];
+            CheckPrivatePath();
+            N_File::C_File(currentProjectPath + "\\" + g_privatePath_menu + "\\.self.json").Write(project);
+            CONSOLE_PRINT_NORMAL("Have linked the current project.")
+        }else if(argv[1] == "-del" && argc - 1 == 2 && isProjectExist == true){ //Unlink project
+            //Remove project from ODEV.
+            Json::Value projects;
+            N_File::C_File projects_json(g_selfPath + "\\projects.json");
+            projects_json.Read(projects);
+            int projects_index = 0;
+            for(Json::Value::iterator projects_iter = projects.begin(); projects_iter != projects.end(); projects_iter++){
+                if((*projects_iter) == currentProjectPath){
+                    projects.removeIndex(projects_index,NULL);
+                }
+                projects_index ++;
+            }
+            projects_json.Write(projects);
+            //Delete private path in the local project directory.
+            N_File::C_Dir privatePath(currentProjectPath + "\\" + g_privatePath);
+            if(privatePath.isExist() == true){
+                privatePath.Delete();
+            }
+            CONSOLE_PRINT_NORMAL("Have unlinked the current project.")
+        }
+    }else if(argc - 1 == 3){ //set build direction
         C_Project *project;
         std::vector<C_Project*> projects;
         project->m_path = currentProjectPath;
@@ -45,8 +84,16 @@ int main(int argc, char *argv[]){
             projects[0]->QueryProgram(program,programs);
             Build(programs[0],argv[1]);
         }
+    }else{
+        std::string command;
+        for(size_t argv_index = 1;argv_index < argc; argv_index++){
+            command += argv[argv_index];
+        }
+        CONSOLE_PRINT_NORMAL_ERROR("No command: " + command)
     }
     //Required global uninstall operation.
-    UninstallProgramPool(currentProjectPath);
-    UninstallAftermathList(currentProjectPath);
+    if(isProjectExist == true){
+        UninstallProgramPool(currentProjectPath);
+        UninstallAftermathList(currentProjectPath);
+    }
 }

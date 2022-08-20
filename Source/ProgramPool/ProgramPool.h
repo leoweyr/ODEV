@@ -2,13 +2,12 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include <windows.h>
 #include "../../Lib/Jsoncpp/Jsoncpp.h"
-#include "../../Lib/Stream/Stream.h"
 
 #include "../AftermathList/AftermathList.h"
+#include "../Console/Style.h"
 
 #pragma comment(lib,"../../Lib/Json/Jsoncpp.lib")
 

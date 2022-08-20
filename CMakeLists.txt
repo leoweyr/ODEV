@@ -5,6 +5,7 @@ project(ODEV)
 set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB SRC_FILES_ODEV
+        "Source/Console/*.h"
         "Source/Console/*.cpp"
         "Source/Deploy/*.h"
         "Source/Deploy/*.cpp"

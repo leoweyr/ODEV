@@ -4,44 +4,30 @@
 
 #include "../../Lib/Stream/Stream.h"
 
-#define CONSOLE_PRINT_NORMAL(content)                                      \
-    for(int isPrint = 0; isPrint < 2; isPrint++){                          \
-        /*Print dividing line.*/                                           \
-        for(int i=0;i<120;i++){                                            \
-            if(i == 0 && isPrint == 0){                                    \
-                std::cout << "ODEV";                                       \
-                i += 3;                                                    \
-            }else if(i < 120){                                             \
-                std::cout << "-";                                          \
-            }else{                                                         \
-                std::cout << "-" << PRINT_NONE << std::endl;               \
-            }                                                              \
-        }                                                                  \
-        if(isPrint == 0){                                                  \
-            std::cout << content << std::endl;                             \
-        }else{                                                             \
-            break;                                                         \
-        }                                                                  \
-    }
+#define CONSOLE_PRINT_TYPE_END 0
+#define CONSOLE_PRINT_TYPE_INFO 1
+#define CONSOLE_PRINT_TYPE_ERROR 2
 
-#define CONSOLE_PRINT_NORMAL_ERROR(content)                                \
-    for(int isPrint = 0; isPrint < 2; isPrint++){                          \
-        /*Print dividing line.*/                                           \
-        for(int i=0;i<120;i++){                                            \
-            if(i == 0 && isPrint == 0){                                    \
-                std::cout << "ODEV";                                       \
-                i += 3;                                                    \
-            }else if(i < 120){                                             \
-                std::cout << "-";                                          \
-            }else{                                                         \
-                std::cout << "-" << PRINT_NONE << std::endl;               \
-            }                                                              \
-        }                                                                  \
-        if(isPrint == 0){                                                  \
-            std::cout << PRINT_RED << content << PRINT_NONE << std::endl;  \
-        }else{                                                             \
-            break;                                                         \
-        }                                                                  \
+#define CONSOLE_PRINT_NORMAL(printType, content, normalPrintCount)                                  \
+    for(int isPrint = 0; isPrint < 2; isPrint++){                                                   \
+        for(int i = 0; i < 120 && (normalPrintCount == 0 || printType == CONSOLE_PRINT_TYPE_END) && isPrint == 0; i ++){             \
+            if(i == 0 && normalPrintCount == 0){                                                    \
+                std::cout << "ODEV";                                                                \
+                i += 3;                                                                             \
+            }else if (i < 120){                                                                     \
+                std::cout << "-";                                                                   \
+            }else{                                                                                  \
+                std::cout << "-" << PRINT_NONE << std::endl;                                        \
+            }                                                                                       \
+        }                                                                                           \
+        if(isPrint == 0){                                                                           \
+            if(printType == CONSOLE_PRINT_TYPE_INFO){                                               \
+                std::cout << "\n" << "[INFO] " << content << std::endl;                             \
+            }else if(printType == CONSOLE_PRINT_TYPE_ERROR){                                        \
+                std::cout << "\n" << PRINT_RED << "[ERROR] " << content << PRINT_NONE<< std::endl;  \
+            }                                                                                       \
+            normalPrintCount ++;                                                                    \
+        }                                                                                           \
     }
 
 #define CONSOLE_PRINT_BUILD(errorCode, buildRoute, from_public, buildRouteStep, type, name, buildRouteStep_max, contain)                 \

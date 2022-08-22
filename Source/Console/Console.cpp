@@ -3,6 +3,7 @@
 #include "../Deploy/Deploy.h"
 
 /*
+#include <cstring>
 #include <string>
 
 #include "../../Lib/File/File.h"
@@ -36,47 +37,45 @@ int main(int argc, char *argv[]){
         InstallAftermathList(currentProjectPath);
         CheckPrivatePath();
     }
-    if(argv[1][0] == '-'){
-        if(argv[1] == "-new" && argc - 1 == 2){ //link new project
-            //Filing new project in ODEV.
-            Json::Value projects;
-            N_File::C_File projects_json(g_selfPath + "\\projects.json");
-            projects_json.Read(projects);
-            projects.append(currentProjectPath);
-            projects_json.Write(projects);
-            //Initialize private path in the local project directory.
-            Json::Value project;
-            project["name"] = argv[2];
-            CheckPrivatePath();
-            N_File::C_File(currentProjectPath + "\\" + g_privatePath_menu + "\\.self.json").Write(project);
-            CONSOLE_PRINT_NORMAL(CONSOLE_PRINT_TYPE_INFO, "Have linked the current project.", normalPrintCount)
-        }else if(argv[1] == "-del" && argc - 1 == 1 && isProjectExist == true){ //Unlink project
-            //Remove project from ODEV.
-            Json::Value projects;
-            N_File::C_File projects_json(g_selfPath + "\\projects.json");
-            projects_json.Read(projects);
-            int projects_index = 0;
-            for(Json::Value::iterator projects_iter = projects.begin(); projects_iter != projects.end(); projects_iter++){
-                if((*projects_iter) == currentProjectPath){
-                    projects.removeIndex(projects_index,NULL);
-                }
-                projects_index ++;
+    if(strcmp(argv[1],"-new") == 0 && argc - 1 == 2){ //link new project
+        //Filing new project in ODEV.
+        Json::Value projects;
+        N_File::C_File projects_json(g_selfPath + "\\projects.json");
+        projects_json.Read(projects);
+        projects.append(currentProjectPath);
+        projects_json.Write(projects);
+        //Initialize private path in the local project directory.
+        Json::Value project;
+        project["name"] = argv[2];
+        CheckPrivatePath();
+        N_File::C_File(currentProjectPath + "\\" + g_privatePath_menu + "\\.self.json").Write(project);
+        CONSOLE_PRINT_NORMAL(CONSOLE_PRINT_TYPE_INFO, "Have linked the current project.", normalPrintCount)
+    }else if(strcmp(argv[1],"-del") == 0 && argc - 1 == 1 && isProjectExist == true){ //Unlink project
+        //Remove project from ODEV.
+        Json::Value projects;
+        N_File::C_File projects_json(g_selfPath + "\\projects.json");
+        projects_json.Read(projects);
+        int projects_index = 0;
+        for(Json::Value::iterator projects_iter = projects.begin(); projects_iter != projects.end(); projects_iter++){
+            if((*projects_iter) == currentProjectPath){
+                projects.removeIndex(projects_index,NULL);
             }
-            projects_json.Write(projects);
-            //Delete private path in the local project directory.
-            N_File::C_Dir privatePath(currentProjectPath + "\\" + g_privatePath);
-            if(privatePath.isExist() == true){
-                privatePath.Delete();
-            }
-            CONSOLE_PRINT_NORMAL(CONSOLE_PRINT_TYPE_INFO, "Have unlinked the current project.", normalPrintCount)
+            projects_index ++;
         }
-    }else if(argc - 1 == 2){ //set build direction
+        projects_json.Write(projects);
+        //Delete private path in the local project directory.
+        N_File::C_Dir privatePath(currentProjectPath + "\\" + g_privatePath);
+        if(privatePath.isExist() == true){
+            privatePath.Delete();
+        }
+        CONSOLE_PRINT_NORMAL(CONSOLE_PRINT_TYPE_INFO, "Have unlinked the current project.", normalPrintCount)
+    }else if(argc - 1 == 2 && isProjectExist == true){ //set build direction
         C_Project *project;
         std::vector<C_Project*> projects;
         project->m_path = currentProjectPath;
         g_programPool.QueryProject(project,projects);
         std::vector<Json::Value> aftermaths;
-        if(argv[2] == "-self"){ //build the entire project
+        if(strcmp(argv[2], "-self") == 0){ //build the entire project
             Build(projects[0],argv[1]);
         }else{ //build the specified program
             C_Program *program;

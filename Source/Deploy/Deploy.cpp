@@ -190,15 +190,15 @@ void OutStaticAftermath(const std::vector<C_Aftermath*> targetAftermaths, std::v
 
 void SetGlobalConfig(){
     g_selfPath = CURRENT_EXE_PATH;
-    g_publicPath = g_selfPath + "\\" + "public";
-    g_publicPath_buildWay = g_publicPath + "\\" + "buildWay";
-    g_publicPath_buildRoute = g_publicPath + "\\" + "buildRoute";
-    g_publicPath_aftermath = g_publicPath + "\\" + "aftermath";
+    g_publicPath = g_selfPath + "\\public";
+    g_publicPath_buildWay = g_publicPath + "\\buildWay";
+    g_publicPath_buildRoute = g_publicPath + "\\buildRoute";
+    g_publicPath_aftermath = g_publicPath + "\\aftermath";
     g_privatePath = ".ODEV";
-    g_privatePath_buildWay = g_privatePath + "\\" + "graph\\way";
-    g_privatePath_buildRoute = g_privatePath + "\\" + "graph\\route";
-    g_privatePath_menu = g_privatePath + "\\" + "graph\\menu";
-    g_privatePath_aftermath = g_privatePath + "\\" + "aftermath";
+    g_privatePath_buildWay = g_privatePath + "\\graph\\way";
+    g_privatePath_buildRoute = g_privatePath + "\\graph\\route";
+    g_privatePath_menu = g_privatePath + "\\graph\\menu";
+    g_privatePath_aftermath = g_privatePath + "\\aftermath";
 }
 
 bool MatchProjectPath(const std::string &path){
@@ -216,9 +216,8 @@ bool MatchProjectPath(const std::string &path){
         }
         path_specifiedDepth = StringUnite(splitPathArray_specifiedDepth,"\\");
         if(path_specifiedDepth == projectPaths_iter->asString()){
-            if(N_File::C_Dir(projectPaths_iter->asString()).isExist() == true){
+            if(N_File::C_Dir(projectPaths_iter->asString()).IsExist() == true){
                 const_cast<std::string &>(path) = projectPaths_iter->asString();
-                g_currentProjectPath = projectPaths_iter->asString();
                 return true;
             } else{
                 projectPaths.removeIndex(projectPaths_index,NULL);
@@ -305,8 +304,8 @@ void UninstallAftermathList(const std::string currentProjectPath){
 }
 
 void CheckPrivatePath(){
-    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_menu).isExist(1);
-    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_buildRoute).isExist(1);
-    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_buildWay).isExist(1);
-    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_aftermath).isExist(1);
+    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_menu).IsExist(1);
+    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_buildRoute).IsExist(1);
+    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_buildWay).IsExist(1);
+    N_File::C_Dir(g_currentProjectPath + "\\" + g_privatePath_aftermath).IsExist(1);
 }

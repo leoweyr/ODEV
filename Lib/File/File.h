@@ -33,7 +33,7 @@ namespace N_File{
 
         public:
             C_File(const std::string path);
-            bool isExist();
+            bool IsExist();
             bool Read(std::string &content);
             bool Read(Json::Value &content);
             void Write(const std::string content);
@@ -49,7 +49,7 @@ namespace N_File{
         public:
             std::string m_path;
             C_Dir(const std::string path);
-            bool isExist(const int mode = 0);
+            bool IsExist(const int mode = 0);
             std::vector<std::string> List();
             bool Delete(const std::string path = "");
     };

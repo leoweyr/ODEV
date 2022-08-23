@@ -30,6 +30,7 @@ int main(int argc, char *argv[]){
         isProjectExist = false;
         CONSOLE_PRINT_NORMAL(CONSOLE_PRINT_TYPE_ERROR, "The current path contains few project!", normalPrintCount)
     }
+    g_currentProjectPath = currentProjectPath;
     //Required global install operation.
     if(isProjectExist == true){
         SetCurrentWorkingDirectoryPath(currentProjectPath);
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]){
         projects_json.Write(projects);
         //Delete private path in the local project directory.
         N_File::C_Dir privatePath(currentProjectPath + "\\" + g_privatePath);
-        if(privatePath.isExist() == true){
+        if(privatePath.IsExist() == true){
             privatePath.Delete();
         }
         CONSOLE_PRINT_NORMAL(CONSOLE_PRINT_TYPE_INFO, "Have unlinked the current project.", normalPrintCount)

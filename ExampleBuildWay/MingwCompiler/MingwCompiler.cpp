@@ -34,7 +34,7 @@ BUILDMETHOD(Exe){
     cmd = (sourceType == TYPE_C)?("gcc" + sourceFiles + dependencyFiles + " -o " + buildPath + "\\" + buildInstruct["basic"]["name"].asString()):("g++" + sourceFiles + dependencyFiles + " -o " + buildPath + "\\" + buildInstruct["basic"]["name"].asString());
     ExeCmd(cmd.data(),feedback);
     //Check if the compilation was successful.
-    isBlock = !(N_File::C_File(buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".exe").isExist());
+    isBlock = !(N_File::C_File(buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".exe").IsExist());
     AFTERMATHFORMAT(Feedback)(aftermath,feedback,isBlock,stepTitle);
     return aftermath;
 }
@@ -63,7 +63,7 @@ BUILDMETHOD(Lib){
             cmd = (sourceType == TYPE_C)?("gcc -c" + (*source_iter).asString()):("g++ -c" + (*source_iter).asString());
             ExeCmd(cmd.data(),feedback);
             N_File::C_File sourceFileObject(CURRENT_WORKING_DIRECTORY_PATH + sourceFileName + ".o");
-            if(sourceFileObject.isExist() == false){
+            if(sourceFileObject.IsExist() == false){
                 isBlock = true;
             }else{
                 sourceFileObject.Move(buildPath);
@@ -116,7 +116,7 @@ BUILDMETHOD(Lib){
     stepTitle = "Compile all object files into one static library";
     cmd = "ar cqs " + buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".lib" + objectFiles;
     ExeCmd(cmd.data(),feedback);
-    isBlock = !(N_File::C_File(buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".lib").isExist());
+    isBlock = !(N_File::C_File(buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".lib").IsExist());
     AFTERMATHFORMAT(Feedback)(aftermath,feedback,isBlock,stepTitle);
     if(isBlock == true){
         return aftermath;
@@ -125,7 +125,7 @@ BUILDMETHOD(Lib){
     std::vector<std::string> objectFiles_split = StringSplit(objectFiles," ");
     for(std::vector<std::string>::iterator objectFiles_split_iter = objectFiles_split.begin(); objectFiles_split_iter != objectFiles_split.end(); objectFiles_split_iter++){
         N_File::C_File objectFile((*objectFiles_split_iter));
-        if(objectFile.isExist() == true){
+        if(objectFile.IsExist() == true){
             objectFile.Delete();
         }
     }
@@ -167,7 +167,7 @@ BUILDMETHOD(Dll){
     cmd = (sourceType == TYPE_C)?("gcc" + sourceFiles + dependencyFiles + " -shared -o " + buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".dll"):("g++" + sourceFiles + dependencyFiles + " -shared -o " + buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".dll");
     ExeCmd(cmd.data(),feedback);
     //Check if the compilation was successful.
-    isBlock = !(N_File::C_File(buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".dll").isExist());
+    isBlock = !(N_File::C_File(buildPath + "\\" + buildInstruct["basic"]["name"].asString() + ".dll").IsExist());
     AFTERMATHFORMAT(Feedback)(aftermath,feedback,isBlock,stepTitle);
     //TODO: Integrate included header files and remove the line<#pragma comment(lib, "...")>.
     return aftermath;
